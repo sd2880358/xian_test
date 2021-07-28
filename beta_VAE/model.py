@@ -175,7 +175,7 @@ class Classifier(tf.keras.Model):
                     tf.keras.layers.Flatten(),
                     tf.keras.layers.Dense(128, activation='relu'),
                     # No activation
-                    tf.keras.layers.Dense(10),
+                    tf.keras.layers.Dense(self.num_cls),
                 ]
             )
         elif (model == 'mlp'):
@@ -190,7 +190,7 @@ class Classifier(tf.keras.Model):
                             512, activation='relu'),
 
                         # No activation
-                        tf.keras.layers.Dense(10),
+                        tf.keras.layers.Dense(self.num_cls),
                     ]
                 )
             )
