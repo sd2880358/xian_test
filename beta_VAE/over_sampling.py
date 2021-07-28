@@ -71,9 +71,11 @@ def start_train(epochs, target, threshold, model, classifier, train_set, majorit
             train_step(model, classifier, x, y, sim_optimizer, cls_optimizer)
 
 
+
+        '''
         for x, y in tf.data.Dataset.zip((majority_set[0], majority_set[1])):
             train_step(model, classifier, x, y, sim_optimizer, cls_optimizer, oversample=True, threshold=threshold)
-
+        '''
 
 
         #for x, y in tf.data.Dataset.zip((majority_set[0], majority_set[1])):
