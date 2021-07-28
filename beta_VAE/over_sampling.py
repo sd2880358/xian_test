@@ -15,7 +15,6 @@ from loss import compute_loss, confidence_function, top_loss, acc_metrix
 def start_train(epochs, target, threshold, model, classifier, train_set, majority_set, test_set, date, filePath):
     sim_optimizer = tf.keras.optimizers.Adam(1e-4)
     cls_optimizer = tf.keras.optimizers.Adam(1e-4)
-    @tf.function
     def train_step(model, classifier, x, y, sim_optimizer, cls_optimizer, oversample=False, threshold=None):
         if (oversample):
             with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape:

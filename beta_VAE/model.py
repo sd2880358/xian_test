@@ -560,12 +560,6 @@ class F_VAE(tf.keras.Model):
                         1)
                 ]
             )
-        self.projection_head = tf.keras.Sequential(
-            [
-                tf.keras.layers.InputLayer(latent_dim),
-                tf.keras.layers.Dense(num_cls, use_bias=False)
-            ]
-        )
 
     def sample(self, eps=None):
         if eps is None:
