@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from beta_VAE.celebA import CelebA
+from celebA import CelebA
 import pandas as pd
 
 
