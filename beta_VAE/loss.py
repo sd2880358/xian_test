@@ -96,17 +96,15 @@ def compute_loss(model, classifier, x, y, gamma=1, loss='cross_entropy'):
     kl_loss = tf.reduce_mean(kl_divergence(mean, logvar))
     h = classifier.projection(x)
     classifier_loss = top_loss(classifier, h, y)
-    x_h = classifier.projection(x_logit)
-    gen_loss = top_loss(classifier, x_h, y) * gamma
     if (loss=='cross_entropy'):
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
         logx_z = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1, 2, 3]))
         log_qz, logq_z_product = estimate_entropies(features, mean, logvar)
         tc = tf.reduce_mean(log_qz - logq_z_product)
-        return tf.reduce_mean(logx_z + kl_loss + gen_loss + (beta - 1) * tc), h, classifier_loss
+        return tf.reduce_mean(logx_z + kl_loss  + (beta - 1) * tc), h, classifier_loss
     elif(loss == 'mean_square_loss'):
         logx_z = tf.reduce_mean(tf.losses.mean_squared_error(y_true=x, y_pred=x_logit))
-        return tf.reduce_mean(logx_z + beta * kl_loss + gen_loss), h, classifier_loss
+        return tf.reduce_mean(logx_z + beta * kl_loss), h, classifier_loss
 
 def dual_loss(model, classifier, x, y, gamma=1):
     beta = model.beta
