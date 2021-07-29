@@ -47,9 +47,10 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
         else:
             with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape, tf.GradientTape() as o_tape:
                 ori_loss, _, encode_loss = compute_loss(model, classifier, x, y)
+                _, _, o_cls_loss = compute_loss(model, o_classifier, x, y)
             sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
             cls_gradients = cls_tape.gradient(encode_loss, classifier.trainable_variables)
-            o_gradients = o_tape.gradient(encode_loss, o_classifier.trainable_variables)
+            o_gradients = o_tape.gradient(o_cls_loss, o_classifier.trainable_variables)
             cls_optimizer.apply_gradients(zip(cls_gradients, classifier.trainable_variables))
             sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
             cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
