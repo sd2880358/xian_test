@@ -8,8 +8,8 @@ if __name__ == "__main__":
     ZIP_PATH = "celeba-dataset.zip"
     CROP_WIDTH = 128
     CROP_HEIGHT = 128
-    OUTPUT_WIDTH = 32
-    OTUPUT_HEIGHT = 32
+    OUTPUT_WIDTH = 64
+    OTUPUT_HEIGHT = 64
     SAVE_PATH = "data.npy"
 
     archive = zipfile.ZipFile(ZIP_PATH, "r")

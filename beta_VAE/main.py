@@ -1,6 +1,6 @@
 import tensorflow as tf
 from over_sampling import start_train
-from dataset import preprocess_images, divide_dataset, imbalance_sample
+from dataset import preprocess_images, divide_dataset, imbalance_sample, Dataset
 from model import CVAE, Classifier, F_VAE
 from celebA import CelebA
 from load_data import split
@@ -9,8 +9,15 @@ if __name__ == '__main__':
     target = 'margin'
     threshold = 0.85
     date = '7_29'
-    file_path = 'celebA'
-    num_examples_to_generate = 16
+    file_path = 'mnist1'
+    dataset = Dataset('mnist')
+    epochs = 200
+    (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
+    sim_clr = F_VAE(shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
+    classifier = Classifier(shape=dataset.shape, model='cnn', num_cls=dataset.num_cls)
+    o_classifier = Classifier(shape=dataset.shape, model='cnn', num_cls=dataset.num_cls)
+
+    '''
     epochs = 200
     batch_size = 32
     shape = [32, 32, 3]
@@ -24,9 +31,7 @@ if __name__ == '__main__':
 
     majority_labels = [0] * irs[0]
     train_set, train_labels = imbalance_sample(train_set, train_labels, irs)
-    sim_clr = F_VAE(shape=shape, latent_dim=latent_dim, model='cnn', num_cls=num_cls)
-    classifier = Classifier(shape=shape, model='cnn', num_cls=num_cls)
-    o_classifier = Classifier(shape=shape, model='cnn', num_cls=num_cls)
+    
 
     train_set = (tf.data.Dataset.from_tensor_slices(train_set)
                     .shuffle(len(train_set), seed=1).batch(batch_size))
@@ -45,7 +50,7 @@ if __name__ == '__main__':
 
     test_labels = (tf.data.Dataset.from_tensor_slices(test_labels)
                       .shuffle(len(test_labels), seed=1).batch(batch_size))
-
+    '''
     start_train(epochs, target, threshold, sim_clr, classifier, o_classifier,
-                [train_set, train_labels], [majority_images, majority_labels],
-                [test_dataset, test_labels], date, file_path)
+                [train_set, train_labels],
+                [test_set, test_labels], date, file_path)
