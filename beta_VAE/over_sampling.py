@@ -110,7 +110,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 oGMean, oAsca = acc_metrix(o_h.numpy().argmax(-1), t_y.numpy())
                 total_loss = ori_loss
                 pre_train_g_mean(pre_g_mean)
-                pre_train_acsa(pre_train_acsa)
+                pre_train_acsa(pre_acsa)
                 o_g_mean(oGMean)
                 o_acsa(oAsca)
                 elbo_loss(total_loss)
@@ -128,14 +128,18 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                     sample = x_logit.numpy()[np.where((conf >= threshold) & (l == id))]
                     over_sample_loss(len(sample)/num)
             elbo =  -elbo_loss.result()
+            pre_train_g_mean_acc = pre_train_g_mean.result()
+            pre_train_acsa_acc = pre_train_acsa.result()
+            o_acsa_acc = o_acsa.result()
+            o_g_mean_acc = o_g_mean.result()
             over_sample = over_sample_loss.result()
             df = pd.DataFrame({
                 "elbo": elbo,
-                "pre_g_mean": pre_train_g_mean,
-                'pre_acsa': pre_train_acsa,
+                "pre_g_mean": pre_train_g_mean_acc,
+                'pre_acsa': pre_train_acsa_acc,
                 'ood': over_sample,
-                'o_g_mean': o_g_mean,
-                'o_acsa': o_acsa
+                'o_g_mean': o_g_mean_acc,
+                'o_acsa': o_acsa_acc
             }, index=[e], dtype=np.float32)
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
@@ -145,7 +149,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 df.to_csv(result_dir+'/result.csv', mode='a', header=False)
             print('Epoch: {}, elbo: {}, pre_g_means: {}, pre_acsa: {}, \n, o_g_means:{},  o_acsa:{}, \n' 
                   'over_sample_loss: {}, time elapse for current epoch: {}'
-                  .format(epoch+1, elbo, pre_train_acsa, pre_train_acsa, o_g_mean, o_acsa,
+                  .format(epoch+1, elbo, pre_train_acsa_acc, pre_train_acsa_acc, o_g_mean_acc, o_acsa_acc,
                           over_sample, end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
