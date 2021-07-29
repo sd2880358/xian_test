@@ -21,7 +21,7 @@ def latent_triversal(model, classifier, x, y, r, n):
     for dim in range(len(features)):
         for replace in triversal_range:
             features[:, dim] = replace
-            z = tf.concat([features, y])
+            z = tf.concat([features, y], axis=1)
             x_logit = model.sample(z)
             conf, l = confidence_function(classifier, x_logit, target=target)
             sample = x_logit.numpy()[np.where((conf >= threshold) & (l == y))]
@@ -47,7 +47,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 for dim in range(len(features)):
                     for replace in triversal_range:
                         features[:, dim] = replace
-                        z = tf.concat([features, y])
+                        z = tf.concat([features, y], axis=1)
                         x_logit = model.sample(z)
                         conf, l = confidence_function(classifier, x_logit, target=target)
                         sample = x_logit.numpy()[np.where((conf>=threshold) & (l==y))]
