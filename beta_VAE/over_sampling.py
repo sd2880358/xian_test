@@ -52,7 +52,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         conf, l = confidence_function(classifier, x_logit, target=target)
                         sample = x_logit.numpy()[np.where((conf>=threshold) & (l==y))]
                         sample_y = y.numpy()[np.where((conf>=threshold) & (l==y))]
-                        ori_loss, h, cls_loss = compute_loss(model, o_classifier, sample_y, [id]*len(sample), gamma=1)
+                        ori_loss, h, cls_loss = compute_loss(model, o_classifier, sample, sample_y, gamma=1)
 
                         o_conf, l = confidence_function(o_classifier, x_logit, target=target)
                         o_sample = x_logit.numpy()[np.where((o_conf >= threshold) & (l == y))]
