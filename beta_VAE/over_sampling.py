@@ -38,7 +38,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
 
     def train_step(model, classifier, o_classifier, x, y, sim_optimizer, cls_optimizer, oversample=False, threshold=None):
         if (oversample):
-            with tf.GradientTape() as cls_tape:
+            with tf.GradientTape() as o_tape:
                 r = 3
                 n = 100
                 mean, logvar = model.encode(x)
@@ -58,7 +58,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         o_sample = x_logit.numpy()[np.where((o_conf >= threshold) & (l == y))]
                         o_sample_y = y.numpy()[np.where((o_conf >= threshold) & (l == y))]
                         _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
-                        cls_gradients = cls_tape.gradient(cls_loss + o_loss, o_classifier.trainable_variables)
+                        cls_gradients = o_tape.gradient(cls_loss + o_loss, o_classifier.trainable_variables)
                         cls_optimizer.apply_gradients(zip(cls_gradients, o_classifier.trainable_variables))
                 '''
                 sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
