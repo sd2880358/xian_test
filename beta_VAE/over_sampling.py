@@ -38,7 +38,6 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
 
     def train_step(model, classifier, o_classifier, x, y, sim_optimizer, cls_optimizer, oversample=False, threshold=None):
         if (oversample):
-            with tf.GradientTape() as o_tape:
                 r = 3
                 n = 100
                 mean, logvar = model.encode(x)
@@ -46,20 +45,20 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 triversal_range = np.linspace(-r, r, n)
                 for dim in range(len(features)):
                     for replace in triversal_range:
-                        features[:, dim] = replace
-                        z = tf.concat([features, tf.expand_dims(y, 1)], axis=1)
-                        x_logit = model.sample(z)
-                        conf, l = confidence_function(classifier, x_logit, target=target)
-                        sample = x_logit.numpy()[np.where((conf>=threshold) & (l==y))]
-                        sample_y = y.numpy()[np.where((conf>=threshold) & (l==y))]
-                        ori_loss, h, cls_loss = compute_loss(model, o_classifier, sample, sample_y, gamma=1)
-
-                        o_conf, l = confidence_function(o_classifier, x_logit, target=target)
-                        o_sample = x_logit.numpy()[np.where((o_conf >= threshold) & (l == y))]
-                        o_sample_y = y.numpy()[np.where((o_conf >= threshold) & (l == y))]
-                        _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
-                        cls_gradients = o_tape.gradient(cls_loss + o_loss, o_classifier.trainable_variables)
-                        cls_optimizer.apply_gradients(zip(cls_gradients, o_classifier.trainable_variables))
+                        with tf.GradientTape() as o_tape:
+                            features[:, dim] = replace
+                            z = tf.concat([features, tf.expand_dims(y, 1)], axis=1)
+                            x_logit = model.sample(z)
+                            conf, l = confidence_function(classifier, x_logit, target=target)
+                            sample = x_logit.numpy()[np.where((conf>=threshold) & (l==y))]
+                            sample_y = y.numpy()[np.where((conf>=threshold) & (l==y))]
+                            ori_loss, h, cls_loss = compute_loss(model, o_classifier, sample, sample_y, gamma=1)
+                            o_conf, l = confidence_function(o_classifier, x_logit, target=target)
+                            o_sample = x_logit.numpy()[np.where((o_conf >= threshold) & (l == y))]
+                            o_sample_y = y.numpy()[np.where((o_conf >= threshold) & (l == y))]
+                            _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
+                            o_gradients = o_tape.gradient(cls_loss + o_loss, o_classifier.trainable_variables)
+                        cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 '''
                 sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
                 sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
