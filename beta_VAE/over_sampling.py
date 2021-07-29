@@ -18,7 +18,7 @@ def latent_triversal(model, classifier, x, y, r, n):
     features = model.reparameterize(mean, logvar).numpy()
     triversal_range = np.linspace(-r, r, n)
     acc = tf.keras.metrics.Mean()
-    for dim in range(len(features)-1):
+    for dim in range(features.shape[1]):
         for replace in triversal_range:
             features[:, dim] = replace
             z = tf.concat([features, tf.expand_dims(y,1)], axis=1)
