@@ -18,7 +18,7 @@ def latent_triversal(model, classifier, x, y, r, n):
     features = model.reparameterize(mean, logvar).numpy()
     triversal_range = np.linspace(-r, r, n)
     acc = tf.keras.metrics.Mean()
-    for dim in range(len(features)):
+    for dim in range(len(features)-1):
         for replace in triversal_range:
             features[:, dim] = replace
             z = tf.concat([features, tf.expand_dims(y,1)], axis=1)
@@ -43,7 +43,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 mean, logvar = model.encode(x)
                 features = model.reparameterize(mean, logvar).numpy()
                 triversal_range = np.linspace(-r, r, n)
-                for dim in range(len(features)):
+                for dim in range(len(features)-1):
                     for replace in triversal_range:
                         with tf.GradientTape() as o_tape:
                             features[:, dim] = replace
