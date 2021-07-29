@@ -55,6 +55,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
     checkpoint_path = "./checkpoints/{}/{}".format(date, filePath)
     ckpt = tf.train.Checkpoint(sim_clr=model,
                                clssifier = classifier,
+                               o_classifier=o_classifier,
                                optimizer=sim_optimizer,
                                cls_optimizer=cls_optimizer)
     ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
