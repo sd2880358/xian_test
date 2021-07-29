@@ -49,9 +49,7 @@ class Dataset():
     self.batch_size = batch_size
     self.dataset = dataset
     self.switcher = {
-      'mnist': datasets.mnist.load_data(),
-      'fashion_mnist': datasets.fashion_mnist.load_data(),
-      'cifar_10': datasets.svhn_cropped.load_data(),
+      'mnist': datasets.mnist.load_data()
     }
 
     if (dataset == 'mnist'):
@@ -69,9 +67,6 @@ class Dataset():
     train_set = preprocess_images(train_set, shape=self.shape)
     test_set = preprocess_images(test_set, shape=self.shape)
 
-
-    majority_images = train_set[np.where(train_labels == 0)][:self.irs[0]]
-    majority_labels = [0] * self.irs[0]
 
 
     train_images, train_labels = imbalance_sample(train_set, train_labels, self.irs)
