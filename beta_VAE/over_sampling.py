@@ -56,7 +56,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
 
                         o_conf, l = confidence_function(o_classifier, x_logit, target=target)
                         o_sample = x_logit.numpy()[np.where((o_conf >= threshold) & (l == y))]
-                        o_sample_y = x_logit.numpy(np.where((o_conf >= threshold) & (l == y)))
+                        o_sample_y = y.numpy()[np.where((o_conf >= threshold) & (l == y))]
                         _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
                         cls_gradients = cls_tape.gradient(cls_loss + o_loss, o_classifier.trainable_variables)
                         cls_optimizer.apply_gradients(zip(cls_gradients, o_classifier.trainable_variables))
