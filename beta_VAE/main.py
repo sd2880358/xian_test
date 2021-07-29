@@ -26,6 +26,7 @@ if __name__ == '__main__':
     train_set, train_labels = imbalance_sample(train_set, train_labels, irs)
     sim_clr = F_VAE(shape=shape, latent_dim=latent_dim, model='cnn', num_cls=num_cls)
     classifier = Classifier(shape=shape, model='cnn', num_cls=num_cls)
+    o_classifier = Classifier(shape=shape, model='cnn', num_cls=num_cls)
 
     train_set = (tf.data.Dataset.from_tensor_slices(train_set)
                     .shuffle(len(train_set), seed=1).batch(batch_size))
@@ -45,5 +46,6 @@ if __name__ == '__main__':
     test_labels = (tf.data.Dataset.from_tensor_slices(test_labels)
                       .shuffle(len(test_labels), seed=1).batch(batch_size))
 
-    start_train(epochs, target, threshold, sim_clr, classifier, [train_set, train_labels], [majority_images, majority_labels],
+    start_train(epochs, target, threshold, sim_clr, classifier, o_classifier,
+                [train_set, train_labels], [majority_images, majority_labels],
                 [test_dataset, test_labels], date, file_path)

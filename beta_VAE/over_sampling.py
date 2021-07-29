@@ -12,16 +12,17 @@ import math
 import pandas as pd
 from loss import compute_loss, confidence_function, top_loss, acc_metrix
 
-def start_train(epochs, target, threshold, model, classifier, train_set, majority_set, test_set, date, filePath):
+def start_train(epochs, target, threshold, model, classifier, o_classifier,
+                train_set, majority_set, test_set, date, filePath):
     sim_optimizer = tf.keras.optimizers.Adam(1e-5)
     cls_optimizer = tf.keras.optimizers.Adam(1e-6)
-    def train_step(model, classifier, x, y, sim_optimizer, cls_optimizer, oversample=False, threshold=None):
+    def train_step(model, classifier, o_classifier, x, y, sim_optimizer, cls_optimizer, oversample=False, threshold=None):
         if (oversample):
             with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape:
                 mean, logvar = model.encode(x)
                 features = model.reparameterize(mean, logvar)
                 num = len(y)
-                for id in range(1, 10):
+                for id in range(1, model.num_cls):
                     ids = [id] * num
                     identity = tf.expand_dims(tf.cast(ids, tf.float32), 1)
                     z = tf.concat([features, identity], axis=1)
@@ -32,12 +33,17 @@ def start_train(epochs, target, threshold, model, classifier, train_set, majorit
                     mis_sample_loss = top_loss(classifier, h=mis_sample, y=[id]*len(mis_sample))
                     sample = x_logit.numpy()[np.where((conf>=threshold) & (l==id))]
                     ori_loss, h, cls_loss = compute_loss(model, classifier, sample, [id]*len(sample), gamma=1)
+
+                    o_conf, l = confidence_function(o_classifier, x_logit, target=target)
+                    o_sample = x_logit.numpy()[np.where((o_conf >= threshold) & (l == id))]
+                    _, _, o_loss = compute_loss(model, o_classifier, sample, [id] * len(o_sample))
+                '''
                 sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
                 sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
                 '''
-                cls_gradients = cls_tape.gradient(cls_loss, classifier.trainable_variables)
-                cls_optimizer.apply_gradients(zip(cls_gradients, classifier.trainable_variables))
-                '''
+                cls_gradients = cls_tape.gradient(cls_loss+o_loss, o_classifier.trainable_variables)
+                cls_optimizer.apply_gradients(zip(cls_gradients, o_classifier.trainable_variables))
+
         else:
             with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape:
                 ori_loss, _, encode_loss = compute_loss(model, classifier, x, y)
@@ -45,6 +51,7 @@ def start_train(epochs, target, threshold, model, classifier, train_set, majorit
             cls_gradients = cls_tape.gradient(encode_loss, classifier.trainable_variables)
             cls_optimizer.apply_gradients(zip(cls_gradients, classifier.trainable_variables))
             sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
+            cls_optimizer.apply_gradients(zip(cls_gradients, o_classifier.trainable_variables))
     checkpoint_path = "./checkpoints/{}/{}".format(date, filePath)
     ckpt = tf.train.Checkpoint(sim_clr=model,
                                clssifier = classifier,
@@ -67,13 +74,15 @@ def start_train(epochs, target, threshold, model, classifier, train_set, majorit
         start_time = time.time()
 
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            train_step(model, classifier, x, y, sim_optimizer, cls_optimizer)
+            train_step(model, classifier, o_classifier,
+                    x, y, sim_optimizer, cls_optimizer)
 
 
 
         '''
         for x, y in tf.data.Dataset.zip((majority_set[0], majority_set[1])):
-            train_step(model, classifier, x, y, sim_optimizer, cls_optimizer, oversample=True, threshold=threshold)
+            train_step(model, classifier, o_classifier, 
+            x, y, sim_optimizer, cls_optimizer, oversample=True, threshold=threshold)
         '''
 
 
@@ -84,6 +93,10 @@ def start_train(epochs, target, threshold, model, classifier, train_set, majorit
         end_time = time.time()
         elbo_loss = tf.keras.metrics.Mean()
         over_sample_loss = tf.keras.metrics.Mean()
+        pre_train_g_mean = tf.keras.metrics.Mean()
+        pre_train_acsa = tf.keras.metrics.Mean()
+        o_g_mean = tf.keras.metrics.Mean()
+        o_acsa = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%5 == 0:
             ckpt_save_path = ckpt_manager.save()
@@ -91,15 +104,21 @@ def start_train(epochs, target, threshold, model, classifier, train_set, majorit
                                                         ckpt_save_path))
             for t_x, t_y in tf.data.Dataset.zip((test_set[0], test_set[1])):
                 ori_loss, h, _ = compute_loss(model, classifier, t_x, t_y)
-                g_mean, acsa = acc_metrix(h.numpy().argmax(-1), t_y.numpy())
+                pre_g_mean, pre_acsa = acc_metrix(h.numpy().argmax(-1), t_y.numpy())
+                _, o_h, _ = compute_loss(model, o_classifier, t_x, t_y)
+                oGMean, oAsca = acc_metrix(o_h.numpy().argmax(-1), t_y.numpy())
                 total_loss = ori_loss
+                pre_train_g_mean(pre_g_mean)
+                pre_train_acsa(pre_train_acsa)
+                o_g_mean(oGMean)
+                o_acsa(oAsca)
                 elbo_loss(total_loss)
 
             for x, y in tf.data.Dataset.zip((majority_set[0], majority_set[1])):
                 mean, logvar = model.encode(x)
                 features = model.reparameterize(mean, logvar)
                 num = len(y)
-                for id in range(1, 10):
+                for id in range(1, model.num_cls):
                     ids = [id] * num
                     identity = tf.expand_dims(tf.cast(ids, tf.float32), 1)
                     z = tf.concat([features, identity], axis=1)
@@ -111,9 +130,11 @@ def start_train(epochs, target, threshold, model, classifier, train_set, majorit
             over_sample = over_sample_loss.result()
             df = pd.DataFrame({
                 "elbo": elbo,
-                "g_mean": g_mean,
-                'acsa': acsa,
+                "pre_g_mean": pre_train_g_mean,
+                'pre_acsa': pre_train_acsa,
                 'ood': over_sample,
+                'o_g_mean': o_g_mean,
+                'o_acsa': o_acsa
             }, index=[e], dtype=np.float32)
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
@@ -121,8 +142,10 @@ def start_train(epochs, target, threshold, model, classifier, train_set, majorit
                 df.to_csv(result_dir+'/result.csv')
             else:  # else it exists so append without writing the header
                 df.to_csv(result_dir+'/result.csv', mode='a', header=False)
-            print('Epoch: {}, elbo: {}, g_means: {}, acsa: {}, over_sample_loss: {}, time elapse for current epoch: {}'
-                  .format(epoch+1, elbo, g_mean, acsa, over_sample, end_time - start_time))
+            print('Epoch: {}, elbo: {}, pre_g_means: {}, pre_acsa: {}, \n, o_g_means:{},  o_acsa:{}, \n' 
+                  'over_sample_loss: {}, time elapse for current epoch: {}'
+                  .format(epoch+1, elbo, pre_train_acsa, pre_train_acsa, o_g_mean, o_acsa,
+                          over_sample, end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
 
