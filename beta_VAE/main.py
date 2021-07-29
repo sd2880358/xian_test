@@ -8,7 +8,7 @@ import numpy as np
 if __name__ == '__main__':
     target = 'margin'
     threshold = 0.85
-    date = '7_21'
+    date = '7_29'
     file_path = 'celebA'
     num_examples_to_generate = 16
     epochs = 200
