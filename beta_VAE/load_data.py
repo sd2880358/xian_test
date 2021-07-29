@@ -8,7 +8,7 @@ def load_celeba(path):
     data = np.load(os.path.join(path, "data.npy"))
     data = data.astype(float)
     data = data / 255.0 #0~1
-    return data
+    return data.astype('float32')
 
 def split(path):
 

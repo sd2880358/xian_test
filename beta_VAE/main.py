@@ -1,5 +1,4 @@
 import tensorflow as tf
-import pandas as pd
 from over_sampling import start_train
 from dataset import preprocess_images, divide_dataset, imbalance_sample
 from model import CVAE, Classifier, F_VAE
@@ -11,8 +10,6 @@ if __name__ == '__main__':
     threshold = 0.85
     date = '7_21'
     file_path = 'celebA'
-    sim_optimizer = tf.keras.optimizers.Adam(1e-4)
-    cls_optimizer = tf.keras.optimizers.Adam(1e-4)
     num_examples_to_generate = 16
     epochs = 200
     batch_size = 32
