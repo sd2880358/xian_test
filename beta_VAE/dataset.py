@@ -50,8 +50,8 @@ class Dataset():
     self.batch_size = batch_size
     self.dataset = dataset
     self.switcher = {
-      'mnist': datasets.mnist.load_data(),
-      'celebA': split('../CelebA')
+      'mnist': datasets.mnist.load_data()
+      #'celebA': split('../CelebA')
     }
 
     if (dataset == 'mnist'):
