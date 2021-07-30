@@ -3,6 +3,7 @@ from tensorflow_addons.image import rotate
 import pandas as pd
 from tensorflow.keras import datasets
 import tensorflow as tf
+from load_data import split
 def preprocess_images(images, shape):
   images = images.reshape((images.shape[0], shape[0], shape[1], shape[2])) / 255.
   return np.where(images > .5, 1.0, 0.0).astype('float32')
@@ -49,7 +50,8 @@ class Dataset():
     self.batch_size = batch_size
     self.dataset = dataset
     self.switcher = {
-      'mnist': datasets.mnist.load_data()
+      'mnist': datasets.mnist.load_data(),
+      'celebA': split('../CelebA')
     }
 
     if (dataset == 'mnist'):
@@ -60,6 +62,9 @@ class Dataset():
 
     elif (dataset == 'celebA'):
       self.shape = (64, 64, 3)
+      self.num_cls = 5
+      self.latent_dims = 64
+      self.irs = [15000, 1500, 750, 300, 150]
 
   def load_data(self):
     (train_set, train_labels), (test_set, test_labels) = self.switcher[self.dataset]
