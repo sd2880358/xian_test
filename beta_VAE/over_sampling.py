@@ -91,7 +91,6 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
     else:
         e = 0
     for epoch in range(epochs):
-
         e += 1
         start_time = time.time()
 
@@ -117,7 +116,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
         o_acsa = tf.keras.metrics.Mean()
         over_sample_acc = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
-        if (epoch +1)%10 == 0:
+        if (epoch +1)%1 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
@@ -127,13 +126,15 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 _, o_h, _ = compute_loss(model, o_classifier, t_x, t_y)
                 oGMean, oAsca = acc_metrix(o_h.numpy().argmax(-1), t_y.numpy())
                 total_loss = ori_loss
+                '''
                 over_sample_acc(latent_triversal(model, classifier, t_x, t_y, r=3, n=100))
+                '''
                 pre_train_g_mean(pre_g_mean)
                 pre_train_acsa(pre_acsa)
                 o_g_mean(oGMean)
                 o_acsa(oAsca)
                 elbo_loss(total_loss)
-            mean, logvar = model.encode(x)
+
 
             elbo =  -elbo_loss.result()
             pre_train_g_mean_acc = pre_train_g_mean.result()
@@ -145,7 +146,6 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 "elbo": elbo,
                 "pre_g_mean": pre_train_g_mean_acc,
                 'pre_acsa': pre_train_acsa_acc,
-                'ood': over_sample,
                 'o_g_mean': o_g_mean_acc,
                 'o_acsa': o_acsa_acc
             }, index=[e], dtype=np.float32)
@@ -156,12 +156,12 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
             else:  # else it exists so append without writing the header
                 df.to_csv(result_dir+'/result.csv', mode='a', header=False)
             print('*' * 20)
-            print('Epoch: {}, elbo: {}, over_sample_acc: {}, \n'
+            print('Epoch: {}, elbo: {}, \n'
                   ' pre_g_means: {}, pre_acsa: {}, \n, o_g_means:{},  o_acsa:{}, \n' 
                   'time elapse for current epoch: {}'
                   .format(epoch+1, elbo, over_sample_acc.result(),
                           pre_train_acsa_acc, pre_train_acsa_acc, o_g_mean_acc, o_acsa_acc,
-                          over_sample, end_time - start_time))
+                          end_time - start_time))
             print('*' * 20)
     #compute_and_save_inception_score(model, file_path)
 
