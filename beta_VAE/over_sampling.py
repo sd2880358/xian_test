@@ -39,7 +39,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
     def train_step(model, classifier, o_classifier, x, y, sim_optimizer, cls_optimizer, oversample=False, threshold=None):
         if (oversample):
                 r = 3
-                n = 100
+                n = 10
                 mean, logvar = model.encode(x)
                 features = model.reparameterize(mean, logvar).numpy()
                 triversal_range = np.linspace(-r, r, n)
