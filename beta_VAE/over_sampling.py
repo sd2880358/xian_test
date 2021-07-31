@@ -99,13 +99,11 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                     x, y, sim_optimizer, cls_optimizer)
 
 
-
-        '''
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
             train_step(model, classifier, o_classifier, 
             x, y, sim_optimizer, cls_optimizer, oversample=True, threshold=threshold)
 
-        '''
+
 
         end_time = time.time()
         elbo_loss = tf.keras.metrics.Mean()
@@ -160,7 +158,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                   ' pre_g_means: {}, pre_acsa: {}, \n, o_g_means:{},  o_acsa:{}, \n' 
                   'time elapse for current epoch: {}'
                   .format(epoch+1, elbo, over_sample_acc.result(),
-                          pre_train_acsa_acc, pre_train_acsa_acc, o_g_mean_acc, o_acsa_acc,
+                          pre_train_g_mean_acc, pre_train_acsa_acc, o_g_mean_acc, o_acsa_acc,
                           end_time - start_time))
             print('*' * 20)
     #compute_and_save_inception_score(model, file_path)
