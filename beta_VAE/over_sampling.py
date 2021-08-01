@@ -59,7 +59,8 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                             o_sample = x_logit.numpy()[np.where((o_conf >= threshold) & (l == y))]
                             o_sample_y = y.numpy()[np.where((o_conf >= threshold) & (l == y))]
                             _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
-                        o_gradients = o_tape.gradient(cls_loss + o_loss + o_cls_loss, o_classifier.trainable_variables)
+                            total_loss = tf.reduce_mean(cls_loss + o_loss + o_cls_loss)
+                        o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
                         cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 '''
                 sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
