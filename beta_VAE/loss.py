@@ -216,7 +216,7 @@ def g_means(y_pred, y_true):
 
 def get_gMeans(y_pred, y_true):
     g_means_set = []
-    for i in range(len(np.bincount(y_true.flatten()))):
+    for i in np.bincount(y_true.flatten()):
         tmp_pred = np.array([1 if label==i else 0 for label in y_pred])
         tmp_true = np.array([1 if label==i else 0 for label in y_true])
         g_means_set.append(g_means(tmp_pred, tmp_true))
@@ -234,7 +234,7 @@ def acsa(y_pred, y_true):
 def acc_metrix(y_pred, y_true):
     g_means_set = []
     acsa_set = []
-    for i in range(len(np.bincount(y_true.flatten()))):
+    for i in np.bincount(y_true.flatten()):
         tmp_pred = np.array([1 if label==i else 0 for label in y_pred])
         tmp_true = np.array([1 if label==i else 0 for label in y_true])
         g_means_set.append(g_means(tmp_pred, tmp_true))
