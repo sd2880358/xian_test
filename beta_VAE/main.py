@@ -8,8 +8,8 @@ import numpy as np
 if __name__ == '__main__':
     target = 'margin'
     threshold = 0.85
-    date = '7_29'
-    data_name = 'celebA'
+    date = '8_1'
+    data_name = 'mnist'
     file_path = data_name + "1"
     dataset = Dataset(data_name)
     epochs = 100
