@@ -50,7 +50,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
             if(model.data=='celebA'):
                 for cls in range(model.num_cls):
                     with tf.GradientTape() as o_tape:
-                        sample_label = np.array(([cls] * features[0]))
+                        sample_label = np.array(([cls] * features.shape[0]))
                         z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
                         x_logit = model.sample(z)
                         m_index = estimate(classifier, x_logit, threshold, y, target)
