@@ -9,11 +9,12 @@ if __name__ == '__main__':
     target = 'margin'
     threshold = 0.85
     date = '7_29'
-    file_path = 'mnist2'
-    dataset = Dataset('mnist')
+    data_name = 'celebA'
+    file_path = data_name + "1"
+    dataset = Dataset(data_name)
     epochs = 100
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
-    sim_clr = F_VAE(shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
+    sim_clr = F_VAE(name=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
     classifier = Classifier(shape=dataset.shape, model='cnn', num_cls=dataset.num_cls)
     o_classifier = Classifier(shape=dataset.shape, model='cnn', num_cls=dataset.num_cls)
 

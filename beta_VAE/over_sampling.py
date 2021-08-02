@@ -12,6 +12,9 @@ import math
 import pandas as pd
 from loss import compute_loss, confidence_function, top_loss, acc_metrix
 
+def estimate(classifier, x_logit, threshold, label, target):
+    conf, l = confidence_function(classifier, x_logit, target=target)
+    return np.where((conf>=threshold) & (l==label))
 
 def latent_triversal(model, classifier, x, y, r, n):
     mean, logvar = model.encode(x)
@@ -35,18 +38,36 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 train_set, test_set, date, filePath):
     sim_optimizer = tf.keras.optimizers.Adam(1e-4)
     cls_optimizer = tf.keras.optimizers.Adam(1e-4)
-
+    o_optimizer = tf.keras.optimizers.Adam(1e-4)
     def train_step(model, classifier, o_classifier, x, y, sim_optimizer, cls_optimizer, oversample=False, threshold=None):
         if (oversample):
+            with tf.GradientTape() as o_tape:
+                _, _, o_cls_loss = compute_loss(model, o_classifier, x, y)
+            o_gradients = o_tape.gradient(o_cls_loss, o_classifier.trainable_variables)
+            cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
+            mean, logvar = model.encode(x)
+            features = model.reparameterize(mean, logvar)
+            if(model.name=='celebA'):
+                for cls in range(model.num_cls):
+                    with tf.GradientTape() as o_tape:
+                        sample_label = np.array(([cls] * features[0]))
+                        z = tf.concat([features, np.expand_dims(sample_label, 1)])
+                        x_logit = model.sample(z)
+                        m_index = estimate(classifier, x_logit, threshold, y, target)
+                        sample = x_logit.numpy()[m_index]
+                        sample_y = y.numpy()[m_index]
+                        ori_loss, h, cls_loss = compute_loss(model, o_classifier, sample, sample_y, gamma=1)
+                        s_index = estimate(o_classifier, x_logit, threshold, y, target)
+                        o_sample = x_logit.numpy()[s_index]
+                        o_sample_y = y.numpy()[s_index]                    
+                        _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
+                        total_loss = tf.reduce_mean(cls_loss + o_loss)
+                    o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
+                    o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
+            else:
                 r = 5
                 n = 10
-                mean, logvar = model.encode(x)
-                features = model.reparameterize(mean, logvar)
                 triversal_range = np.linspace(-r, r, n)
-                with tf.GradientTape() as o_tape:
-                    _, _, o_cls_loss = compute_loss(model, o_classifier, x, y)
-                o_gradients = o_tape.gradient(o_cls_loss, o_classifier.trainable_variables)
-                cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 for dim in range(features.shape[1]):
                     for replace in triversal_range:
                         with tf.GradientTape() as o_tape:
@@ -54,13 +75,13 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                             c_features[:, dim] = replace
                             z = tf.concat([c_features, tf.expand_dims(y, 1)], axis=1)
                             x_logit = model.sample(z)
-                            conf, l = confidence_function(classifier, x_logit, target=target)
-                            sample = x_logit.numpy()[np.where((conf>=threshold) & (l==y))]
-                            sample_y = y.numpy()[np.where((conf>=threshold) & (l==y))]
+                            m_index = estimate(classifier, x_logit, threshold, y, target)
+                            sample = x_logit.numpy()[m_index]
+                            sample_y = y.numpy()[m_index]
                             ori_loss, h, cls_loss = compute_loss(model, o_classifier, sample, sample_y, gamma=1)
-                            o_conf, l = confidence_function(o_classifier, x_logit, target=target)
-                            o_sample = x_logit.numpy()[np.where((o_conf >= threshold) & (l == y))]
-                            o_sample_y = y.numpy()[np.where((o_conf >= threshold) & (l == y))]
+                            s_index = estimate(o_classifier, x_logit, threshold, y, target)
+                            o_sample = x_logit.numpy()[s_index]
+                            o_sample_y = y.numpy()[s_index]
                             _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
                             total_loss = tf.reduce_mean(cls_loss + o_loss)
                         o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
@@ -96,11 +117,9 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
     for epoch in range(epochs):
         e += 1
         start_time = time.time()
-        '''
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
             train_step(model, classifier, o_classifier,
                     x, y, sim_optimizer, cls_optimizer)
-        '''
 
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
             train_step(model, classifier, o_classifier, 

@@ -50,8 +50,8 @@ class Dataset():
     self.batch_size = batch_size
     self.dataset = dataset
     self.switcher = {
-      'mnist': datasets.mnist.load_data()
-      #'celebA': split('../CelebA')
+      'mnist': datasets.mnist.load_data(),
+      'celebA': split('../CelebA')
     }
 
     if (dataset == 'mnist'):
@@ -59,6 +59,7 @@ class Dataset():
       self.num_cls = 10
       self.latent_dims = 8
       self.irs = [4000, 2000, 1000, 750, 500, 350, 200, 100, 60, 40]
+
 
     elif (dataset == 'celebA'):
       self.shape = (64, 64, 3)
