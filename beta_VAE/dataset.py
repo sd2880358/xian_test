@@ -69,11 +69,9 @@ class Dataset():
 
   def load_data(self):
     (train_set, train_labels), (test_set, test_labels) = self.switcher[self.dataset]
-
-    train_set = preprocess_images(train_set, shape=self.shape)
-    test_set = preprocess_images(test_set, shape=self.shape)
-
-
+    if (self.dataset == 'mnist'):
+      train_set = preprocess_images(train_set, shape=self.shape)
+      test_set = preprocess_images(test_set, shape=self.shape)
 
     train_images, train_labels = imbalance_sample(train_set, train_labels, self.irs)
     train_images = (tf.data.Dataset.from_tensor_slices(train_images)
@@ -88,3 +86,8 @@ class Dataset():
     test_labels = (tf.data.Dataset.from_tensor_slices(test_labels)
                       .shuffle(len(test_labels), seed=1).batch(self.batch_size))
     return (train_images, train_labels), (test_images, test_labels)
+
+if __name__ == '__main__':
+      dataset = Dataset('celebA')
+      (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
+      print('test')
