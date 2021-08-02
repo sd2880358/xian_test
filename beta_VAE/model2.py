@@ -15,7 +15,7 @@ class CVAE(tf.keras.Model):
         [
             tf.keras.layers.InputLayer(input_shape=shape),
             tf.keras.layers.Conv2D(
-                filters=128, kernel_size=5, strides=(1, 1), padding='same', use_bias=False),
+                filters=32, kernel_size=5, strides=(1, 1), padding='same', use_bias=False),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2D(
@@ -23,10 +23,10 @@ class CVAE(tf.keras.Model):
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2D(
-                filters=1, kernel_size=5, strides=(2, 2), padding='same', use_bias=False),
+                filters=128, kernel_size=5, strides=(2, 2), padding='same', use_bias=False),
             tf.keras.layers.Flatten(),
             # No activation
-            tf.keras.layers.Dense(latent_dim + latent_dim),
+            tf.keras.layers.Dense(latent_dim - 1 + latent_dim -1),
         ]
     )
 

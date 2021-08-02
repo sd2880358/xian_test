@@ -128,16 +128,22 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
 
 
 
-        end_time = time.time()
-        elbo_loss = tf.keras.metrics.Mean()
-        over_sample_loss = tf.keras.metrics.Mean()
-        pre_train_g_mean = tf.keras.metrics.Mean()
-        pre_train_acsa = tf.keras.metrics.Mean()
-        o_g_mean = tf.keras.metrics.Mean()
-        o_acsa = tf.keras.metrics.Mean()
-        over_sample_acc = tf.keras.metrics.Mean()
+
+
+
+
+
+
+
+
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
+            end_time = time.time()
+            elbo_loss = tf.keras.metrics.Mean()
+            pre_train_g_mean = tf.keras.metrics.Mean()
+            pre_train_acsa = tf.keras.metrics.Mean()
+            o_g_mean = tf.keras.metrics.Mean()
+            o_acsa = tf.keras.metrics.Mean()
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))

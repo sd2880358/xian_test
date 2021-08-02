@@ -91,3 +91,5 @@ if __name__ == '__main__':
       dataset = Dataset('celebA')
       (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
       print('test')
+
+

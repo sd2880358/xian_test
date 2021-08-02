@@ -509,26 +509,40 @@ class F_VAE(tf.keras.Model):
                 [
                     tf.keras.layers.InputLayer(input_shape=shape),
                     tf.keras.layers.Conv2D(
-                        filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
+                        filters=32, kernel_size=5, strides=(1, 1), padding='same', use_bias=False),
+                    tf.keras.layers.BatchNormalization(),
+                    tf.keras.layers.LeakyReLU(),
                     tf.keras.layers.Conv2D(
-                        filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
+                        filters=64, kernel_size=5, strides=(2, 2), padding='same', use_bias=False),
+                    tf.keras.layers.BatchNormalization(),
+                    tf.keras.layers.LeakyReLU(),
+                    tf.keras.layers.Conv2D(
+                        filters=128, kernel_size=5, strides=(2, 2), padding='same', use_bias=False),
                     tf.keras.layers.Flatten(),
                     # No activation
-                    tf.keras.layers.Dense(latent_dim-1 + latent_dim-1),
+                    tf.keras.layers.Dense(latent_dim - 1 + latent_dim - 1),
                 ]
             )
+
             self.decoder = tf.keras.Sequential(
                 [
                     tf.keras.layers.InputLayer(input_shape=(latent_dim,)),
                     tf.keras.layers.Dense(units=self.output_f * self.output_f * 32, activation=tf.nn.relu),
+                    tf.keras.layers.BatchNormalization(),
+                    tf.keras.layers.LeakyReLU(),
                     tf.keras.layers.Reshape(target_shape=(self.output_f, self.output_f, 32)),
                     tf.keras.layers.Conv2DTranspose(
-                        filters=64, kernel_size=3, strides=2, padding='same',
-                        activation='relu'),
+                        filters=128, kernel_size=5, strides=1, padding='same', use_bias=False),
+                    tf.keras.layers.BatchNormalization(),
+                    tf.keras.layers.LeakyReLU(),
                     tf.keras.layers.Conv2DTranspose(
-                        filters=32, kernel_size=3, strides=2, padding='same',
-                        activation='relu'),
-                    # No activation
+                        filters=64, kernel_size=3, strides=2, padding='same', use_bias=False),
+                    tf.keras.layers.BatchNormalization(),
+                    tf.keras.layers.LeakyReLU(),
+                    tf.keras.layers.Conv2DTranspose(
+                        filters=32, kernel_size=3, strides=2, padding='same', use_bias=False),
+                    tf.keras.layers.BatchNormalization(),
+                    tf.keras.layers.LeakyReLU(),
                     tf.keras.layers.Conv2DTranspose(
                         filters=self.output_l, kernel_size=3, strides=1, padding='same'),
                 ]
