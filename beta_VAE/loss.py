@@ -191,50 +191,61 @@ def false_negative(y_pred, y_true):
     return np.sum(y_pred[y_pred!=y_true]==0)
 
 def true_negative(y_pred, y_true):
-    return np.sum(y_pred[y_pred == y_true]==1)
+    return np.sum(y_pred[y_pred == y_true]==0)
 
 def false_positive(y_pred, y_true):
     return np.sum(y_pred[y_pred!=y_true]==1)
 
 def sensitivity(y_pred, y_true):
     t_p =  true_positive(y_pred, y_true)
+    f_n = false_negative(y_pred, y_true)
     if (t_p == 0):
-        return 0
+        if (f_n + t_p == 0):
+            return 1
+        else:
+            return 0
     else:
-        return true_positive(y_pred, y_true)/(true_positive(y_pred, y_true) + false_negative(y_pred, y_true))
+        return t_p/(t_p + f_n)
 
 def specifity(y_pred, y_true):
     t_n = true_negative(y_pred, y_true)
     f_p = false_positive(y_pred, y_true)
     if (t_n == 0):
-        return 0
+        if (t_n + f_p == 0):
+            return 1
+        else:
+            return 0
     else:
-        return true_negative(y_pred, y_true)/(true_negative(y_pred, y_true) + false_positive(y_pred, y_true))
+        return t_n/(t_n + f_p)
 
 def g_means(y_pred, y_true):
     return np.sqrt(sensitivity(y_pred, y_true) * specifity(y_pred, y_true))
 
 def get_gMeans(y_pred, y_true):
     g_means_set = []
-    for i in np.bincount(y_true.flatten()):
+    c = np.bincount(y_true.flatten())
+    for i in range(len(c)):
         tmp_pred = np.array([1 if label==i else 0 for label in y_pred])
         tmp_true = np.array([1 if label==i else 0 for label in y_true])
         g_means_set.append(g_means(tmp_pred, tmp_true))
-    print(g_means_set)
     return np.mean(g_means_set)
 
 def acsa(y_pred, y_true):
     correct = np.sum(y_pred[y_pred == y_true]==1)
     pred = np.sum(y_pred==1)
     if (correct == 0):
-        return 0
+        if (pred == 0):
+            return 1
+        else:
+            return 0
     else:
         return correct/pred
 
 def acc_metrix(y_pred, y_true):
     g_means_set = []
     acsa_set = []
-    for i in np.bincount(y_true.flatten()):
+    c = np.bincount(y_true.flatten())
+    for i in range(len(c)):
         tmp_pred = np.array([1 if label==i else 0 for label in y_pred])
         tmp_true = np.array([1 if label==i else 0 for label in y_true])
         g_means_set.append(g_means(tmp_pred, tmp_true))
