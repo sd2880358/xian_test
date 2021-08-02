@@ -47,7 +47,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
             cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
             mean, logvar = model.encode(x)
             features = model.reparameterize(mean, logvar)
-            if(model.name=='celebA'):
+            if(model.data=='celebA'):
                 for cls in range(model.num_cls):
                     with tf.GradientTape() as o_tape:
                         sample_label = np.array(([cls] * features[0]))

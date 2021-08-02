@@ -494,10 +494,10 @@ class SIM_CLR(tf.keras.Model):
         return h
 
 class F_VAE(tf.keras.Model):
-    def __init__ (self, name, shape=[28,28,1], beta=4, latent_dim=8, num_cls=10, model='cnn'):
+    def __init__ (self, data, shape=[28,28,1], beta=4, latent_dim=8, num_cls=10, model='cnn'):
         super(F_VAE, self).__init__()
         self.beta = beta
-        self.name = name
+        self.name = data
         self.shape = shape
         self.num_cls = num_cls
         self.latent_dim = latent_dim
