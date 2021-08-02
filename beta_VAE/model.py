@@ -497,7 +497,7 @@ class F_VAE(tf.keras.Model):
     def __init__ (self, data, shape=[28,28,1], beta=4, latent_dim=8, num_cls=10, model='cnn'):
         super(F_VAE, self).__init__()
         self.beta = beta
-        self.name = data
+        self.data = data
         self.shape = shape
         self.num_cls = num_cls
         self.latent_dim = latent_dim
