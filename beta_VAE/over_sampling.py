@@ -162,7 +162,6 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
             pre_train_acsa_acc = pre_train_acsa.result()
             o_acsa_acc = o_acsa.result()
             o_g_mean_acc = o_g_mean.result()
-            over_sample = over_sample_loss.result()
             df = pd.DataFrame({
                 "elbo": elbo,
                 "pre_g_mean": pre_train_g_mean_acc,
