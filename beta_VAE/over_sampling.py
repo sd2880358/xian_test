@@ -12,6 +12,7 @@ import math
 import pandas as pd
 from loss import compute_loss, confidence_function, top_loss, acc_metrix
 
+
 def estimate(classifier, x_logit, threshold, label, target):
     conf, l = confidence_function(classifier, x_logit, target=target)
     return np.where((conf>=threshold) & (l==label))

@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from tensorflow.linalg import matvec
+from imblearn.metrics import geometric_mean_score
 
 def rota_cross_loss(model, x, d, r_x):
     c, s = np.cos(d), np.sin(d)
@@ -218,17 +219,17 @@ def specifity(y_pred, y_true):
     else:
         return t_n/(t_n + f_p)
 
-def g_means(y_pred, y_true):
-    return np.sqrt(sensitivity(y_pred, y_true) * specifity(y_pred, y_true))
+def g_means(s, p):
+    return np.sqrt(s* p)
 
 def get_gMeans(y_pred, y_true):
-    g_means_set = []
     c = np.bincount(y_true.flatten())
     for i in range(len(c)):
         tmp_pred = np.array([1 if label==i else 0 for label in y_pred])
         tmp_true = np.array([1 if label==i else 0 for label in y_true])
-        g_means_set.append(g_means(tmp_pred, tmp_true))
-    return np.mean(g_means_set)
+        s.append(sensitivity(tmp_pred, tmp_true))
+        p.append(specifity(tmp_pred, tmp_true))
+    return g_means(np.mean(s), np.mean(p))
 
 def acsa(y_pred, y_true):
     correct = np.sum(y_pred[y_pred == y_true]==1)
@@ -242,12 +243,19 @@ def acsa(y_pred, y_true):
         return correct/pred
 
 def acc_metrix(y_pred, y_true):
-    g_means_set = []
-    acsa_set = []
-    c = np.bincount(y_true.flatten())
-    for i in range(len(c)):
-        tmp_pred = np.array([1 if label==i else 0 for label in y_pred])
-        tmp_true = np.array([1 if label==i else 0 for label in y_true])
-        g_means_set.append(g_means(tmp_pred, tmp_true))
-        acsa_set.append(acsa(tmp_pred, tmp_true))
-    return np.mean(g_means_set), np.mean(acsa_set)
+    return geometric_mean_score(y_true, y_pred, average='micro'), acsa_score(y_true, y_pred)
+
+
+def acsa_score(y_true, y_pred):
+    acsa = []
+    for i in range(len(np.bincount(y_true.flatten()))):
+        corr = np.sum(y_pred[y_pred==y_true]==i)
+        total = np.sum(y_pred==i)
+        if (corr == 0):
+            if (total == 0):
+                acsa.append(1)
+            else:
+                acsa.append(0)
+        else:
+            acsa.append(corr/total)
+    return np.mean(acsa)
