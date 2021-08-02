@@ -250,7 +250,7 @@ def acsa_score(y_true, y_pred):
     acsa = []
     for i in range(len(np.bincount(y_true.flatten()))):
         corr = np.sum(y_pred[y_pred==y_true]==i)
-        total = np.sum(y_pred==i)
+        total = np.sum(y_true==i)
         if (corr == 0):
             if (total == 0):
                 acsa.append(1)

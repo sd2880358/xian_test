@@ -235,3 +235,6 @@ if __name__ == '__main__':
     file_path = 'mnist_test21'
     start_train(epochs, target, threshold, sim_clr, classifier, [train_images, train_labels], [majority_images, majority_labels],
                 [test_images, testset_labels], date, file_path)
+
+
+
