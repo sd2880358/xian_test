@@ -53,8 +53,8 @@ class Dataset():
     self.batch_size = batch_size
     self.dataset = dataset
     self.switcher = {
-      'mnist': np.load('./dataset/mnist_dataset.npz'),
-      'celebA': np.load('./dataset/celebA_dataset.npz')
+      'mnist': np.load('../dataset/mnist_dataset.npz'),
+      'celebA': np.load('../dataset/celebA_dataset.npz')
     }
 
     if (dataset == 'mnist'):
@@ -71,13 +71,9 @@ class Dataset():
       self.irs = [15000, 1500, 750, 300, 150]
 
   def load_data(self):
-    (train_set, train_labels), (test_set, test_labels) = self.switcher[self.dataset]
-    if (self.dataset == 'mnist'):
-      train_set = preprocess_images(train_set, shape=self.shape)
-      test_set = preprocess_images(test_set, shape=self.shape)
-
-    train_images, train_labels = imbalance_sample(train_set, train_labels, self.irs)
-    test_irs = [100] * len(self.irs)
+    datasets = self.switcher[self.dataset]
+    (train_images, train_labels)  = datasets['train_images'], datasets['train_labels']
+    (test_images, test_labels) = datasets['test_images'], datasets['test_labels']
     test_images, test_labels = imbalance_sample(test_set, test_labels, test_irs)
 
     train_images = (tf.data.Dataset.from_tensor_slices(train_images)

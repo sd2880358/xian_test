@@ -9,8 +9,8 @@ if __name__ == '__main__':
     target = 'margin'
     threshold = 0.85
     date = '8_2'
-    data_name = 'celebA'
-    file_path = 'celebA_mlp'
+    data_name = 'mnist'
+    file_path = 'mnist_test2'
     dataset = Dataset(data_name)
     epochs = 100
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
