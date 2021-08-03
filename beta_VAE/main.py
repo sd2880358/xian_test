@@ -10,7 +10,7 @@ if __name__ == '__main__':
     threshold = 0.85
     date = '8_2'
     data_name = 'celebA'
-    file_path = 'mnist_mlp'
+    file_path = 'celebA_mlp'
     dataset = Dataset(data_name)
     epochs = 100
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
