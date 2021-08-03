@@ -10,13 +10,13 @@ if __name__ == '__main__':
     threshold = 0.85
     date = '8_2'
     data_name = 'mnist'
-    file_path = data_name + "1"
+    file_path = 'mnist_mlp'
     dataset = Dataset(data_name)
     epochs = 100
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     sim_clr = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
-    classifier = Classifier(shape=dataset.shape, model='cnn', num_cls=dataset.num_cls)
-    o_classifier = Classifier(shape=dataset.shape, model='cnn', num_cls=dataset.num_cls)
+    classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
+    o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
     '''
     epochs = 200

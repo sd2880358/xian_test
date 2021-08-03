@@ -185,9 +185,11 @@ class Classifier(tf.keras.Model):
                         tf.keras.layers.InputLayer(input_shape=self.shape),
                         tf.keras.layers.Flatten(),
                         tf.keras.layers.Dense(
-                            512, activation='relu'),
+                            256),
+                        tf.keras.layers.LeakyReLU(alpha=0.1),
                         tf.keras.layers.Dense(
-                            512, activation='relu'),
+                            128),
+                        tf.keras.layers.LeakyReLU(alpha=0.1),
 
                         # No activation
                         tf.keras.layers.Dense(self.num_cls),

@@ -35,7 +35,10 @@ def imbalance_sample(data, labels, irs):
   label_set = np.zeros([sum(irs)], dtype=int)
   s = 0
   for i in range(len(irs)):
-    tmp_data = data[np.where(labels == i)][:irs[i], :, :]
+    cls_index = np.where(labels==i)
+    max_index = cls_index[0].shape[0]
+    sample_index = np.random.randint(0, max_index, irs[i])
+    tmp_data = data[np.where(labels == i)][sample_index]
     dataset[s:s + irs[i], :, :, :] = tmp_data
     label_set[s:s + irs[i]] = [i] * irs[i]
     s += irs[i]
@@ -74,14 +77,17 @@ class Dataset():
       test_set = preprocess_images(test_set, shape=self.shape)
 
     train_images, train_labels = imbalance_sample(train_set, train_labels, self.irs)
+    test_irs = [100] * len(self.irs)
+    test_images, test_labels = imbalance_sample(test_set, test_labels, test_irs)
+
     train_images = (tf.data.Dataset.from_tensor_slices(train_images)
                     .shuffle(len(train_images), seed=1).batch(self.batch_size))
 
     train_labels = (tf.data.Dataset.from_tensor_slices(train_labels)
                     .shuffle(len(train_labels), seed=1).batch(self.batch_size))
 
-    test_images = (tf.data.Dataset.from_tensor_slices(test_set)
-                   .shuffle(len(test_set), seed=1).batch(self.batch_size))
+    test_images = (tf.data.Dataset.from_tensor_slices(test_images)
+                   .shuffle(len(test_images), seed=1).batch(self.batch_size))
 
     test_labels = (tf.data.Dataset.from_tensor_slices(test_labels)
                       .shuffle(len(test_labels), seed=1).batch(self.batch_size))
