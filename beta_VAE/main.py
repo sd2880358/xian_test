@@ -9,7 +9,7 @@ if __name__ == '__main__':
     target = 'margin'
     threshold = 0.85
     date = '8_2'
-    data_name = 'mnist'
+    data_name = 'celebA'
     file_path = 'mnist_mlp'
     dataset = Dataset(data_name)
     epochs = 100
