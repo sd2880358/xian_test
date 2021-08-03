@@ -53,8 +53,8 @@ class Dataset():
     self.batch_size = batch_size
     self.dataset = dataset
     self.switcher = {
-      'mnist': datasets.mnist.load_data(),
-      'celebA': split('../CelebA')
+      'mnist': np.load('./dataset/mnist_dataset.npz'),
+      'celebA': np.load('./dataset/celebA_dataset.npz')
     }
 
     if (dataset == 'mnist'):
@@ -99,8 +99,6 @@ if __name__ == '__main__':
   num_cls = 5
   latent_dims = 64
   irs = [15000, 1500, 750, 300, 150]
-  train_set = preprocess_images(train_set, shape=shape)
-  test_set = preprocess_images(test_set, shape=shape)
   train_images, train_labels = imbalance_sample(train_set, train_labels, irs)
   test_irs = [100] * len(irs)
   test_images, test_labels = imbalance_sample(test_set, test_labels, test_irs)
