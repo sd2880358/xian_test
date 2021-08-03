@@ -74,7 +74,6 @@ class Dataset():
     datasets = self.switcher[self.dataset]
     (train_images, train_labels)  = datasets['train_images'], datasets['train_labels']
     (test_images, test_labels) = datasets['test_images'], datasets['test_labels']
-    test_images, test_labels = imbalance_sample(test_set, test_labels, test_irs)
 
     train_images = (tf.data.Dataset.from_tensor_slices(train_images)
                     .shuffle(len(train_images), seed=1).batch(self.batch_size))
