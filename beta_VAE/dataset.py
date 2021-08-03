@@ -94,8 +94,18 @@ class Dataset():
     return (train_images, train_labels), (test_images, test_labels)
 
 if __name__ == '__main__':
-      dataset = Dataset('celebA')
-      (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
-      print('test')
+  (train_set, train_labels), (test_set, test_labels) = split('../CelebA')
+  shape = (64, 64, 3)
+  num_cls = 5
+  latent_dims = 64
+  irs = [15000, 1500, 750, 300, 150]
+  train_set = preprocess_images(train_set, shape=shape)
+  test_set = preprocess_images(test_set, shape=shape)
+  train_images, train_labels = imbalance_sample(train_set, train_labels, irs)
+  test_irs = [100] * len(irs)
+  test_images, test_labels = imbalance_sample(test_set, test_labels, test_irs)
+  np.savez('./dataset/celebA_dataset', train_images=train_images, train_labels=train_labels,
+          test_images=test_images, test_labels=test_labels)
+
 
 
