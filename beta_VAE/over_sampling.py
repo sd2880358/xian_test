@@ -56,6 +56,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
             o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
             mean, logvar = model.encode(x)
             features = model.reparameterize(mean, logvar)
+
             if(model.data=='celebA'):
                 for cls in range(model.num_cls):
                     with tf.GradientTape() as o_tape:
@@ -74,8 +75,10 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                                                        len(o_sample_y)/len(sample_label)])
                         metrix['total_sample'].append([sample_label])
                         metrix['total_valid_sample']  = metrix['total_valid_sample'] + list(total_label)
+                    '''
                     o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                     o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
+                    '''
                 return metrix
             else:
                 r = 5
@@ -100,11 +103,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                             metrix['total_sample'].append([y])
                             metrix['total_valid_sample'] + list((y.numpy()[total_sample_idx]))
                         o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
-                        cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
-                '''
-                sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
-                sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
-                '''
+                        o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
         else:
             with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape:
                 ori_loss, _, encode_loss = compute_loss(model, classifier, x, y)
