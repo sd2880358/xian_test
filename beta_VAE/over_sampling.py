@@ -52,11 +52,8 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
         if (oversample):
             with tf.GradientTape() as o_tape:
                 _, _, o_cls_loss = compute_loss(model, o_classifier, x, y)
-            o_gradients = o_tape.gradient(o_cls_loss, o_classifier.trainable_variables)
-            o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
             mean, logvar = model.encode(x)
             features = model.reparameterize(mean, logvar)
-
             if(model.data=='celebA'):
                 for cls in range(model.num_cls):
                     with tf.GradientTape() as o_tape:
@@ -75,10 +72,9 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                                                        len(o_sample_y)/len(sample_label)])
                         metrix['total_sample'] = metrix['total_sample'] + list(sample_label)
                         metrix['total_valid_sample']  = metrix['total_valid_sample'] + list(total_label)
-                    '''
-                    o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
+                        total_loss = tf.reduce_mean(o_loss, o_cls_loss)
+                    o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
                     o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
-                    '''
                 return metrix
             else:
                 r = 5

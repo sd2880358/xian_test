@@ -10,7 +10,7 @@ if __name__ == '__main__':
     threshold = 1
     date = '8_3'
     data_name = 'celebA'
-    file_path = 'celebA_test5'
+    file_path = 'celebA_test6'
     dataset = Dataset(data_name)
     epochs = 100
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
