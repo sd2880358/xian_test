@@ -48,7 +48,7 @@ def latent_triversal(model, classifier, x, y, r, n):
                 acc(len(sample)/len(y))
     return acc.result()
 
-def start_train(epochs, model, classifier, o_classifier,
+def start_train(epochs, model, classifier,
                 train_set, test_set, date, filePath):
     sim_optimizer = tf.keras.optimizers.Adam(1e-4)
     cls_optimizer = tf.keras.optimizers.Adam(1e-4)
@@ -80,8 +80,7 @@ def start_train(epochs, model, classifier, o_classifier,
         e += 1
         start_time = time.time()
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            train_step(model, classifier, o_classifier,
-                    x, y, sim_optimizer, cls_optimizer)
+            train_step(model, classifier, x, y, sim_optimizer, cls_optimizer)
 
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
