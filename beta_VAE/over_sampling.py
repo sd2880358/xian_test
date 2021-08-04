@@ -73,7 +73,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label)
                         metrix['valid_sample'].append([len(sample_y)/len(sample_label),
                                                        len(o_sample_y)/len(sample_label)])
-                        metrix['total_sample'].append([sample_label])
+                        metrix['total_sample'] = metrix['total_sample'] + list(sample_label)
                         metrix['total_valid_sample']  = metrix['total_valid_sample'] + list(total_label)
                     '''
                     o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
@@ -100,7 +100,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                             total_label = y.numpy()[total_sample_idx]
                             _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label)
                             metrix['valid_sample'].append([len(sample_y)/len(y), len(o_sample_y)/len(y)])
-                            metrix['total_sample'].append([y])
+                            metrix['total_sample'] + list(y)
                             metrix['total_valid_sample'] + list((y.numpy()[total_sample_idx]))
                         o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                         o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
