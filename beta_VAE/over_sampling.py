@@ -15,7 +15,7 @@ from loss import compute_loss, confidence_function, top_loss, acc_metrix
 
 def estimate(classifier, x_logit, threshold, label, target):
     conf, l = confidence_function(classifier, x_logit, target=target)
-    return np.where((conf>=threshold) & (l==label))
+    return np.where((conf.numpy()>=threshold) & (l==label))
 
 def merge_list(l1, l2):
     in_l1 = set(l1)
@@ -53,7 +53,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
             with tf.GradientTape() as o_tape:
                 _, _, o_cls_loss = compute_loss(model, o_classifier, x, y)
             o_gradients = o_tape.gradient(o_cls_loss, o_classifier.trainable_variables)
-            cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
+            o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
             mean, logvar = model.encode(x)
             features = model.reparameterize(mean, logvar)
             if(model.data=='celebA'):
@@ -73,7 +73,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         metrix['valid_sample'].append([len(sample_y)/len(sample_label),
                                                        len(o_sample_y)/len(sample_label)])
                         metrix['total_sample'].append([sample_label])
-                        metrix['total_valid_sample'] + list(sample_label[m_index])
+                        metrix['total_valid_sample']  = metrix['total_valid_sample'] + list(total_label)
                     o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                     o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 return metrix
@@ -194,7 +194,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
             for i in range(model.num_cls):
                 name = 'cls{}'.format(i)
                 valid_sample_num = np.sum(total_valid_sample == i)
-                total_gen_num = np.sum(total_sample == i)
+                total_gen_num = np.sum(total_sample.flatten() == i)
                 if (valid_sample_num == 0):
                     result[name] = 0
                 else:
