@@ -63,19 +63,18 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
                         x_logit = model.sample(z)
                         m_index = estimate(classifier, x_logit, threshold, y, target)
-                        sample = x_logit.numpy()[m_index]
-                        sample_y = y.numpy()[m_index]
-                        ori_loss, h, cls_loss = compute_loss(model, o_classifier, sample, sample_y, gamma=1)
+                        sample_y = sample_label[m_index]
                         s_index = estimate(o_classifier, x_logit, threshold, y, target)
-                        o_sample = x_logit.numpy()[s_index]
-                        o_sample_y = y.numpy()[s_index]                    
-                        _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
-                        total_loss = tf.reduce_mean(cls_loss + o_loss)
+                        o_sample_y = sample_label.numpy()[s_index]
+                        total_sample_idx = merge_list(s_index[0], m_index[0])
+                        total_x_sample = x_logit.numpy()[total_sample_idx]
+                        total_label = sample_label[total_sample_idx]
+                        _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label)
                         metrix['valid_sample'].append([len(sample_y)/len(sample_label),
                                                        len(o_sample_y)/len(sample_label)])
                         metrix['total_sample'].append([sample_label])
-                        metrix['total_valid_sample'].append(merge_list(s_index[0], m_index[0]))
-                    o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
+                        metrix['total_valid_sample'].append(sample_label[total_sample_idx])
+                    o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                     o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 return metrix
             else:
@@ -90,18 +89,17 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                             z = tf.concat([c_features, tf.expand_dims(y, 1)], axis=1)
                             x_logit = model.sample(z)
                             m_index = estimate(classifier, x_logit, threshold, y, target)
-                            sample = x_logit.numpy()[m_index]
                             sample_y = y.numpy()[m_index]
-                            ori_loss, h, cls_loss = compute_loss(model, o_classifier, sample, sample_y, gamma=1)
                             s_index = estimate(o_classifier, x_logit, threshold, y, target)
-                            o_sample = x_logit.numpy()[s_index]
                             o_sample_y = y.numpy()[s_index]
-                            _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
-                            total_loss = tf.reduce_mean(cls_loss + o_loss)
+                            total_sample_idx = merge_list(s_index[0], m_index[0])
+                            total_x_sample = x_logit.numpy()[total_sample_idx]
+                            total_label = y.numpy()[total_sample_idx]
+                            _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label)
                             metrix['valid_sample'].append([len(sample_y)/len(y), len(o_sample_y)/len(y)])
                             metrix['total_sample'].append([y])
-                            metrix['total_valid_sample'] + list((y[merge_list(s_index[0], m_index[0])]))
-                        o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
+                            metrix['total_valid_sample'] + list((y.numpy()[merge_list(s_index[0], m_index[0])]))
+                        o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                         cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 '''
                 sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
@@ -197,7 +195,10 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 name = 'cls{}'.format(i)
                 valid_sample_num = np.sum(total_valid_sample == i)
                 total_gen_num = np.sum(total_sample == i)
-                result[name] = valid_sample_num / total_gen_num
+                if (valid_sample_num == 0):
+                    result[name] = 0
+                else:
+                    result[name] = valid_sample_num / total_gen_num
             df = pd.DataFrame(result, index=[e], dtype=np.float32)
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
