@@ -47,11 +47,10 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
     sim_optimizer = tf.keras.optimizers.Adam(1e-4)
     cls_optimizer = tf.keras.optimizers.Adam(1e-4)
     o_optimizer = tf.keras.optimizers.Adam(1e-4)
-    def train_step(model, classifier, o_classifier, x, y, sim_optimizer,
+    def train_step(model, classifier, o_classifier, x,  y, sim_optimizer,
                    cls_optimizer, oversample=False, threshold=None, metrix=None):
         if (oversample):
-            with tf.GradientTape() as o_tape:
-                _, _, o_cls_loss = compute_loss(model, o_classifier, x, y)
+            _, _, o_cls_loss = compute_loss(model, o_classifier, x, y)
             mean, logvar = model.encode(x)
             features = model.reparameterize(mean, logvar)
             if(model.data=='celebA'):
@@ -72,7 +71,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                                                        len(o_sample_y)/len(sample_label)])
                         metrix['total_sample'] = metrix['total_sample'] + list(sample_label)
                         metrix['total_valid_sample']  = metrix['total_valid_sample'] + list(total_label)
-                        total_loss = tf.reduce_mean(o_loss, o_cls_loss)
+                        total_loss = tf.reduce_mean(o_loss + o_cls_loss)
                     o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
                     o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 return metrix
