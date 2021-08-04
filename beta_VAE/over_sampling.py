@@ -67,13 +67,13 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         s_index = estimate(o_classifier, x_logit, threshold, y, target)
                         o_sample_y = sample_label[s_index]
                         total_sample_idx = merge_list(s_index[0], m_index[0])
-                        total_x_sample = x_logit.numpy()[total_sample_idx]
-                        total_label = sample_label[total_sample_idx]
+                        total_x_sample = x_logit.numpy()[m_index]
+                        total_label = sample_label[m_index]
                         _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label)
                         metrix['valid_sample'].append([len(sample_y)/len(sample_label),
                                                        len(o_sample_y)/len(sample_label)])
                         metrix['total_sample'].append([sample_label])
-                        metrix['total_valid_sample'].append(sample_label[total_sample_idx])
+                        metrix['total_valid_sample'] + list(sample_label[m_index])
                     o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                     o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 return metrix
@@ -98,7 +98,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                             _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label)
                             metrix['valid_sample'].append([len(sample_y)/len(y), len(o_sample_y)/len(y)])
                             metrix['total_sample'].append([y])
-                            metrix['total_valid_sample'] + list((y.numpy()[merge_list(s_index[0], m_index[0])]))
+                            metrix['total_valid_sample'] + list((y.numpy()[total_sample_idx]))
                         o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                         cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 '''
@@ -140,9 +140,13 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
         metrix['valid_sample'] = []
         metrix['total_sample'] = []
         metrix['total_valid_sample'] = []
+
+        '''
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
             metrix = train_step(model, classifier, o_classifier,
             x, y, sim_optimizer, cls_optimizer, oversample=True, threshold=threshold, metrix=metrix)
+        '''
+
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
 
@@ -168,9 +172,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 _, o_h, _ = compute_loss(model, o_classifier, t_x, t_y)
                 oGMean, oAsca = acc_metrix(o_h.numpy().argmax(-1), t_y.numpy())
                 total_loss = ori_loss
-                '''
-                over_sample_acc(latent_triversal(model, classifier, t_x, t_y, r=3, n=100))
-                '''
+
                 pre_train_g_mean(pre_g_mean)
                 pre_train_acsa(pre_acsa)
                 o_g_mean(oGMean)
@@ -181,6 +183,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
             pre_train_acsa_acc = pre_train_acsa.result()
             o_acsa_acc = o_acsa.result()
             o_g_mean_acc = o_g_mean.result()
+
             result = {
                 "elbo": elbo,
                 "pre_g_mean": pre_train_g_mean_acc,
@@ -190,7 +193,6 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 'pass_pre_train_classifier': pass_pre_train_classifier,
                 'pass_o_classifier': pass_o_classifier
             }
-
             for i in range(model.num_cls):
                 name = 'cls{}'.format(i)
                 valid_sample_num = np.sum(total_valid_sample == i)
@@ -206,6 +208,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 df.to_csv(result_dir+'/result.csv')
             else:  # else it exists so append without writing the header
                 df.to_csv(result_dir+'/result.csv', mode='a', header=False)
+
             print('*' * 20)
             print('Epoch: {}, elbo: {}, \n'
                   ' pre_g_means: {}, pre_acsa: {}, \n, o_g_means:{},  o_acsa:{}, \n' 
