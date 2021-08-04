@@ -7,7 +7,7 @@ from load_data import split
 import numpy as np
 if __name__ == '__main__':
     target = 'margin'
-    threshold = 0.85
+    threshold = 1
     date = '8_3'
     data_name = 'celebA'
     file_path = 'celebA_test7'

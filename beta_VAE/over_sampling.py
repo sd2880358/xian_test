@@ -50,7 +50,6 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
     def train_step(model, classifier, o_classifier, x,  y, sim_optimizer,
                    cls_optimizer, oversample=False, threshold=None, metrix=None):
         if (oversample):
-            _, _, o_cls_loss = compute_loss(model, o_classifier, x, y)
             mean, logvar = model.encode(x)
             features = model.reparameterize(mean, logvar)
             if(model.data=='celebA'):
@@ -64,15 +63,16 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         s_index = estimate(o_classifier, x_logit, threshold, y, target)
                         o_sample_y = sample_label[s_index]
                         total_sample_idx = merge_list(s_index[0], m_index[0])
-                        total_x_sample = x_logit.numpy()[m_index]
-                        total_label = sample_label[m_index]
+                        total_x_sample = tf.concat((x,x_logit.numpy()[m_index]), axis=0)
+                        total_label = tf.concat((y, sample_label[m_index]), axis=0)
+
                         _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label)
+
                         metrix['valid_sample'].append([len(sample_y)/len(sample_label),
                                                        len(o_sample_y)/len(sample_label)])
                         metrix['total_sample'] = metrix['total_sample'] + list(sample_label)
-                        metrix['total_valid_sample']  = metrix['total_valid_sample'] + list(total_label)
-                        total_loss = tf.reduce_mean(o_loss + o_cls_loss)
-                    o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
+                        metrix['total_valid_sample']  = metrix['total_valid_sample'] + list(sample_y)
+                    o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                     o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 return metrix
             else:
