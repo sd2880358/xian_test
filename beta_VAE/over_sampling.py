@@ -65,7 +65,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         m_index = estimate(classifier, x_logit, threshold, y, target)
                         sample_y = sample_label[m_index]
                         s_index = estimate(o_classifier, x_logit, threshold, y, target)
-                        o_sample_y = sample_label.numpy()[s_index]
+                        o_sample_y = sample_label[s_index]
                         total_sample_idx = merge_list(s_index[0], m_index[0])
                         total_x_sample = x_logit.numpy()[total_sample_idx]
                         total_label = sample_label[total_sample_idx]
