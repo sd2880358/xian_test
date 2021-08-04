@@ -148,10 +148,10 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
 
-            valid_sample = np.array(metrix['valied_sample'])
+            valid_sample = np.array(metrix['valid_sample'])
             total_sample = np.array(metrix['total_sample'])
-            pass_pre_train_classifier = np.mean(metrix['valied_sample'][:, 0])
-            pass_o_classifier = np.mean(metrix['valied_sample'][:, 1])
+            pass_pre_train_classifier = np.mean(valid_sample[:, 0])
+            pass_o_classifier = np.mean(valid_sample[:, 1])
             total_valid_sample = np.array(metrix['total_valid_sample'])
 
 
