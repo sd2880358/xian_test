@@ -1,0 +1,4 @@
+,elbo,pre_g_mean,pre_acsa,o_g_mean,o_acsa,pass_pre_train_classifier,pass_o_classifier,cls0,cls1,cls2,cls3,cls4
+1,-6373.171,0.76816094,0.64721006,0.46147305,0.26352185,0.00553926,0.00016922383,inf,inf,inf,inf,inf
+2,-6377.871,0.76144195,0.64452195,0.5162256,0.32738099,0.005674639,0.0,inf,inf,inf,inf,inf
+3,-6378.946,0.7640557,0.64020705,0.3974873,0.20530307,0.0057987366,0.0,inf,inf,inf,inf,inf
