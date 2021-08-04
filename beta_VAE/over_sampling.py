@@ -178,6 +178,11 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 o_g_mean(oGMean)
                 o_acsa(oAsca)
                 elbo_loss(total_loss)
+            elbo = -elbo_loss.result()
+            pre_train_g_mean_acc = pre_train_g_mean.result()
+            pre_train_acsa_acc = pre_train_acsa.result()
+            o_acsa_acc = o_acsa.result()
+            o_g_mean_acc = o_g_mean.result()
             result = {
                 "elbo": elbo,
                 "pre_g_mean": pre_train_g_mean_acc,
@@ -193,12 +198,6 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 valid_sample_num = np.sum(total_valid_sample == i)
                 total_gen_num = np.sum(total_sample == i)
                 result[name] = valid_sample_num / total_gen_num
-
-            elbo =  -elbo_loss.result()
-            pre_train_g_mean_acc = pre_train_g_mean.result()
-            pre_train_acsa_acc = pre_train_acsa.result()
-            o_acsa_acc = o_acsa.result()
-            o_g_mean_acc = o_g_mean.result()
             df = pd.DataFrame(result, index=[e], dtype=np.float32)
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
