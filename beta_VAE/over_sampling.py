@@ -17,6 +17,13 @@ def estimate(classifier, x_logit, threshold, label, target):
     conf, l = confidence_function(classifier, x_logit, target=target)
     return np.where((conf>=threshold) & (l==label))
 
+def merge_list(l1, l2):
+    in_l1 = set(l1)
+    in_l2 = set(l2)
+    in_l1_not_in_l2 = in_l1 - in_l2
+    return list(l2) + list(in_l1_not_in_l2)
+
+
 def latent_triversal(model, classifier, x, y, r, n):
     mean, logvar = model.encode(x)
     features = model.reparameterize(mean, logvar).numpy()
@@ -40,7 +47,8 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
     sim_optimizer = tf.keras.optimizers.Adam(1e-4)
     cls_optimizer = tf.keras.optimizers.Adam(1e-4)
     o_optimizer = tf.keras.optimizers.Adam(1e-4)
-    def train_step(model, classifier, o_classifier, x, y, sim_optimizer, cls_optimizer, oversample=False, threshold=None):
+    def train_step(model, classifier, o_classifier, x, y, sim_optimizer,
+                   cls_optimizer, oversample=False, threshold=None, metrix=None):
         if (oversample):
             with tf.GradientTape() as o_tape:
                 _, _, o_cls_loss = compute_loss(model, o_classifier, x, y)
@@ -63,8 +71,13 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         o_sample_y = y.numpy()[s_index]                    
                         _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
                         total_loss = tf.reduce_mean(cls_loss + o_loss)
+                        metrix['valid_sample'].append([len(sample_y)/len(sample_label),
+                                                       len(o_sample_y)/len(sample_label)])
+                        metrix['total_sample'].append([sample_label])
+                        metrix['total_valid_sample'].append(merge_list(s_index[0], s_index[1]))
                     o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
                     o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
+                return metrix
             else:
                 r = 5
                 n = 10
@@ -85,6 +98,9 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                             o_sample_y = y.numpy()[s_index]
                             _, _, o_loss = compute_loss(model, o_classifier, o_sample, o_sample_y)
                             total_loss = tf.reduce_mean(cls_loss + o_loss)
+                            metrix['valid_sample'].append([len(sample_y)/len(y), len(o_sample_y)/len(y)])
+                            metrix['total_sample'].append([y])
+                            metrix['total_valid_sample'] + list((y[merge_list(s_index[0], s_index[1])]))
                         o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
                         cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 '''
@@ -122,11 +138,23 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
             train_step(model, classifier, o_classifier,
                     x, y, sim_optimizer, cls_optimizer)
 
+        metrix = {}
+        metrix['valid_sample'] = []
+        metrix['total_sample'] = []
+        metrix['total_valid_sample'] = []
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            train_step(model, classifier, o_classifier, 
-            x, y, sim_optimizer, cls_optimizer, oversample=True, threshold=threshold)
+            metrix = train_step(model, classifier, o_classifier,
+            x, y, sim_optimizer, cls_optimizer, oversample=True, threshold=threshold, metrix=metrix)
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
+
+            valid_sample = np.array(metrix['valied_sample'])
+            total_sample = np.array(metrix['total_sample'])
+            pass_pre_train_classifier = np.mean(metrix['valied_sample'][:, 0])
+            pass_o_classifier = np.mean(metrix['valied_sample'][:, 1])
+            total_valid_sample = np.array(metrix['total_valid_sample'])
+
+
             end_time = time.time()
             elbo_loss = tf.keras.metrics.Mean()
             pre_train_g_mean = tf.keras.metrics.Mean()
@@ -150,20 +178,28 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                 o_g_mean(oGMean)
                 o_acsa(oAsca)
                 elbo_loss(total_loss)
+            result = {
+                "elbo": elbo,
+                "pre_g_mean": pre_train_g_mean_acc,
+                'pre_acsa': pre_train_acsa_acc,
+                'o_g_mean': o_g_mean_acc,
+                'o_acsa': o_acsa_acc,
+                'pass_pre_train_classifier': pass_pre_train_classifier,
+                'pass_o_classifier': pass_o_classifier
+            }
 
+            for i in range(model.num_cls):
+                name = 'cls{}'.format(i)
+                valid_sample_num = np.sum(total_valid_sample == i)
+                total_gen_num = np.sum(total_sample == i)
+                result[name] = valid_sample_num / total_gen_num
 
             elbo =  -elbo_loss.result()
             pre_train_g_mean_acc = pre_train_g_mean.result()
             pre_train_acsa_acc = pre_train_acsa.result()
             o_acsa_acc = o_acsa.result()
             o_g_mean_acc = o_g_mean.result()
-            df = pd.DataFrame({
-                "elbo": elbo,
-                "pre_g_mean": pre_train_g_mean_acc,
-                'pre_acsa': pre_train_acsa_acc,
-                'o_g_mean': o_g_mean_acc,
-                'o_acsa': o_acsa_acc
-            }, index=[e], dtype=np.float32)
+            df = pd.DataFrame(result, index=[e], dtype=np.float32)
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
             if not os.path.isfile(result_dir+'/result.csv'):
