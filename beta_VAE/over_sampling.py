@@ -74,7 +74,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         metrix['valid_sample'].append([len(sample_y)/len(sample_label),
                                                        len(o_sample_y)/len(sample_label)])
                         metrix['total_sample'].append([sample_label])
-                        metrix['total_valid_sample'].append(merge_list(s_index[0], s_index[1]))
+                        metrix['total_valid_sample'].append(merge_list(s_index[0], m_index[0]))
                     o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
                     o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 return metrix
@@ -100,7 +100,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                             total_loss = tf.reduce_mean(cls_loss + o_loss)
                             metrix['valid_sample'].append([len(sample_y)/len(y), len(o_sample_y)/len(y)])
                             metrix['total_sample'].append([y])
-                            metrix['total_valid_sample'] + list((y[merge_list(s_index[0], s_index[1])]))
+                            metrix['total_valid_sample'] + list((y[merge_list(s_index[0], m_index[0])]))
                         o_gradients = o_tape.gradient(total_loss, o_classifier.trainable_variables)
                         cls_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
                 '''
