@@ -142,7 +142,10 @@ if __name__ == '__main__':
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     sim_clr = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
     classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
-    o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
+
+    start_train(epochs, sim_clr, classifier,
+                [train_set, train_labels],
+                [test_set, test_labels], date, file_path)
 
 
 
