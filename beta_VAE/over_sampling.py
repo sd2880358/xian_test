@@ -132,9 +132,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
     for epoch in range(epochs):
         e += 1
         start_time = time.time()
-        for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            train_step(model, classifier, o_classifier,
-                    x, y, sim_optimizer, cls_optimizer)
+
 
         metrix = {}
         metrix['valid_sample'] = []
