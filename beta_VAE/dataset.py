@@ -82,11 +82,7 @@ class Dataset():
     train_labels = (tf.data.Dataset.from_tensor_slices(train_labels)
                     .shuffle(len(train_labels), seed=1).batch(self.batch_size))
 
-    test_images = (tf.data.Dataset.from_tensor_slices(test_images)
-                   .shuffle(len(test_images), seed=1).batch(self.batch_size))
 
-    test_labels = (tf.data.Dataset.from_tensor_slices(test_labels)
-                      .shuffle(len(test_labels), seed=1).batch(self.batch_size))
     return (train_images, train_labels), (test_images, test_labels)
 
 if __name__ == '__main__':

@@ -92,14 +92,13 @@ def start_train(epochs, model, classifier, method,
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            for t_x, t_y in tf.data.Dataset.zip((test_set[0], test_set[1])):
-                ori_loss, h, _ = compute_loss(model, classifier, t_x, t_y)
-                pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), t_y.numpy())
-                total_loss = ori_loss
+            ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
+            pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1].numpy())
+            total_loss = ori_loss
 
-                pre_train_g_mean(pre_g_mean)
-                pre_train_acsa(pre_acsa)
-                elbo_loss(total_loss)
+            pre_train_g_mean(pre_g_mean)
+            pre_train_acsa(pre_acsa)
+            elbo_loss(total_loss)
             elbo = -elbo_loss.result()
             pre_train_g_mean_acc = pre_train_g_mean.result()
             pre_train_acsa_acc = pre_train_acsa.result()
