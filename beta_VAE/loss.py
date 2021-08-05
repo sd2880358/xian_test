@@ -82,7 +82,7 @@ def rotate_vector(vector, matrix):
     test = matvec(matrix, vector)
     return test
 
-def compute_loss(model, classifier, x, y, gamma=1, loss='cross_entropy'):
+def compute_loss(model, classifier, x, y, method='cross_entropy', loss='cross_entropy'):
     beta = model.beta
     mean, logvar = model.encode(x)
     features = model.reparameterize(mean, logvar)
@@ -96,7 +96,7 @@ def compute_loss(model, classifier, x, y, gamma=1, loss='cross_entropy'):
     '''
     kl_loss = tf.reduce_mean(kl_divergence(mean, logvar))
     h = classifier.projection(x)
-    classifier_loss = top_loss(classifier, h, y)
+    classifier_loss = top_loss(classifier, h, y, method)
     if (loss=='cross_entropy'):
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
         logx_z = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1, 2, 3]))
@@ -149,12 +149,15 @@ def com_clr_loss(model, x, g, y, gamma=1):
     return tf.reduce_mean(position_loss + rotation_loss + beta * kl_loss + classifier_loss), h
 
 
-def top_loss(model, h, y):
+def top_loss(model, h, y, method):
     classes = model.num_cls
     labels = tf.one_hot(y, classes)
-    loss_t = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+    if (method == 'cross_entropy'):
+        loss_t = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
         labels=labels, logits=h
-    ))
+        ))
+    elif (method == 'lsq'):
+        loss_t = tf.reduce_min(tf.math.square(labels - h))
 
     return loss_t
 

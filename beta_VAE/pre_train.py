@@ -48,14 +48,14 @@ def latent_triversal(model, classifier, x, y, r, n):
                 acc(len(sample)/len(y))
     return acc.result()
 
-def start_train(epochs, model, classifier,
+def start_train(epochs, model, classifier, method,
                 train_set, test_set, date, filePath):
     sim_optimizer = tf.keras.optimizers.Adam(1e-4)
     cls_optimizer = tf.keras.optimizers.Adam(1e-4)
     def train_step(model, classifier, x, y, sim_optimizer,
                    cls_optimizer):
             with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape:
-                ori_loss, _, encode_loss = compute_loss(model, classifier, x, y)
+                ori_loss, _, encode_loss = compute_loss(model, classifier, x, y, method=method)
             sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
             cls_gradients = cls_tape.gradient(encode_loss, classifier.trainable_variables)
             cls_optimizer.apply_gradients(zip(cls_gradients, classifier.trainable_variables))
@@ -135,14 +135,15 @@ if __name__ == '__main__':
     threshold = 0.95
     date = '8_5'
     data_name = 'large_celebA'
-    file_path = 'pre_train_large_celebA'
+    file_path = 'pre_train_large_celebA_lsq'
     dataset = Dataset(data_name)
     epochs = 200
+    method = 'lsq'
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     sim_clr = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
     classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
-    start_train(epochs, sim_clr, classifier,
+    start_train(epochs, sim_clr, classifier, method,
                 [train_set, train_labels],
                 [test_set, test_labels], date, file_path)
 

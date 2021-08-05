@@ -42,7 +42,7 @@ def latent_triversal(model, classifier, x, y, r, n):
                 acc(len(sample)/len(y))
     return acc.result()
 
-def start_train(epochs, target, threshold, model, classifier, o_classifier,
+def start_train(epochs, target, threshold, method, model, classifier, o_classifier,
                 train_set, test_set, date, filePath):
     sim_optimizer = tf.keras.optimizers.Adam(1e-4)
     cls_optimizer = tf.keras.optimizers.Adam(1e-4)
@@ -66,7 +66,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         total_x_sample = tf.concat((x,x_logit.numpy()[m_index]), axis=0)
                         total_label = tf.concat((y, sample_label[m_index]), axis=0)
 
-                        _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label)
+                        _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label, method=method)
 
                         metrix['valid_sample'].append([len(sample_y)/len(sample_label),
                                                        len(o_sample_y)/len(sample_label)])
@@ -93,7 +93,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                             total_sample_idx = merge_list(s_index[0], m_index[0])
                             total_x_sample = x_logit.numpy()[total_sample_idx]
                             total_label = y.numpy()[total_sample_idx]
-                            _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label)
+                            _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label, method=method)
                             metrix['valid_sample'].append([len(sample_y)/len(y), len(o_sample_y)/len(y)])
                             metrix['total_sample'] + list(y)
                             metrix['total_valid_sample'] + list((y.numpy()[total_sample_idx]))
@@ -101,7 +101,7 @@ def start_train(epochs, target, threshold, model, classifier, o_classifier,
                         o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
         else:
             with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape:
-                ori_loss, _, encode_loss = compute_loss(model, classifier, x, y)
+                ori_loss, _, encode_loss = compute_loss(model, classifier, x, y, method=method)
             sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
             cls_gradients = cls_tape.gradient(encode_loss, classifier.trainable_variables)
             cls_optimizer.apply_gradients(zip(cls_gradients, classifier.trainable_variables))
