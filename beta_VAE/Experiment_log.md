@@ -170,4 +170,7 @@
 - 7/21 (consevative, margin, 0.85,)
     - mnist20 (g_means: 0.96, acsa:0.968)
     - fashion mnist (g_mears:0.8, asca:0.81)
-    
+
+- 8/4
+    - celebA test 7 (margin, 1)
+        - acsa: o_g_means:0.7494,  o_acsa:0.620
