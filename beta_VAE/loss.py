@@ -157,7 +157,8 @@ def top_loss(model, h, y, method):
         labels=labels, logits=h
         ))
     elif (method == 'lsq'):
-        loss_t = tf.reduce_min(tf.math.square(labels - h))
+        y_pred = tf.nn.softmax(h)
+        loss_t = tf.losses.mean_squared_error(y_true=labels, y_pred=y_pred)
 
     return loss_t
 
