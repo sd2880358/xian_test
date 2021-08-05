@@ -171,6 +171,8 @@
     - mnist20 (g_means: 0.96, acsa:0.968)
     - fashion mnist (g_mears:0.8, asca:0.81)
 
-- 8/4
+- 8/4 (small celeba test)
     - celebA test 7 (margin, 1)
         - acsa: o_g_means:0.7494,  o_acsa:0.620
+    - celebA test 8 (margin 0.95)
+        - acsa 0.73, g_means:0.60

@@ -134,7 +134,7 @@ if __name__ == '__main__':
     target = 'margin'
     threshold = 0.95
     date = '8_3'
-    data_name = 'celebA'
+    data_name = 'large_celebA'
     file_path = 'pre_train_celebA'
     dataset = Dataset(data_name)
     epochs = 100

@@ -54,7 +54,8 @@ class Dataset():
     self.dataset = dataset
     self.switcher = {
       'mnist': np.load('../dataset/mnist_dataset.npz'),
-      'celebA': np.load('../dataset/celebA_dataset.npz')
+      'celebA': np.load('../dataset/celebA_dataset.npz'),
+      'large_celebA': np.load('../dataset/celebA_large_dataset.npz')
     }
 
     if (dataset == 'mnist'):
@@ -64,7 +65,7 @@ class Dataset():
       self.irs = [4000, 2000, 1000, 750, 500, 350, 200, 100, 60, 40]
 
 
-    elif (dataset == 'celebA'):
+    elif (dataset == 'celebA' or dataset == 'large_celebA'):
       self.shape = (64, 64, 3)
       self.num_cls = 5
       self.latent_dims = 64
@@ -97,7 +98,7 @@ if __name__ == '__main__':
   train_images, train_labels = imbalance_sample(train_set, train_labels, irs)
   test_irs = [100] * len(irs)
   test_images, test_labels = imbalance_sample(test_set, test_labels, test_irs)
-  np.savez('./dataset/celebA_larger_dataset', train_images=train_images, train_labels=train_labels,
+  np.savez('./dataset/celebA_large_dataset', train_images=train_images, train_labels=train_labels,
           test_images=test_images, test_labels=test_labels)
 
 
