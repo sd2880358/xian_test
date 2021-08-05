@@ -159,10 +159,11 @@ class CVAE(tf.keras.Model):
 
 
 class Classifier(tf.keras.Model):
-    def __init__(self, shape, num_cls=10, model='cnn'):
+    def __init__(self, shape, num_cls=10, model='cnn', threshold=None):
         super(Classifier, self).__init__()
         self.shape = shape
         self.num_cls = num_cls
+        self.threshold = threshold
         if (model == 'cnn'):
             self.model = tf.keras.Sequential(
                 [

@@ -42,22 +42,37 @@ def latent_triversal(model, classifier, x, y, r, n):
                 acc(len(sample)/len(y))
     return acc.result()
 
-def start_train(epochs, target, threshold, method, model, classifier, o_classifier,
+def start_train(epochs, target, threshold_list, method, model, classifier, dataset,
                 train_set, test_set, date, filePath):
-    sim_optimizer = tf.keras.optimizers.Adam(1e-4)
-    cls_optimizer = tf.keras.optimizers.Adam(1e-4)
-    o_optimizer = tf.keras.optimizers.Adam(1e-4)
-    def train_step(model, classifier, o_classifier, x,  y, sim_optimizer,
-                   cls_optimizer, oversample=False, threshold=None, metrix=None):
+    optimizer = tf.keras.optimizers.Adam(1e-4)
+    checkpoints_list = []
+    classifier_list= []
+    for i in threshold_list:
+        checkpoint_path = "./checkpoints/{}/{}/{}".format(date, filePath, i)
+        o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls, threshold=i)
+        ckpt = tf.train.Checkpoint(sim_clr=model,
+                                   clssifier=classifier,
+                                   o_classifier=o_classifier,
+                                   )
+        ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
+        if ckpt_manager.latest_checkpoint:
+            ckpt.restore(ckpt_manager.latest_checkpoint)
+            print('Latest checkpoint restored!!')
+        classifier_list.append(o_classifier)
+        checkpoints_list.append(ckpt_manager)
+    def train_step(model, classifier, o_classifier, x,  y, oversample=False, threshold=None, metrix_list=None):
         if (oversample):
+            tmp = []
             mean, logvar = model.encode(x)
             features = model.reparameterize(mean, logvar)
             if(model.data=='celebA'):
                 for cls in range(model.num_cls):
-                    with tf.GradientTape() as o_tape:
-                        sample_label = np.array(([cls] * features.shape[0]))
-                        z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
-                        x_logit = model.sample(z)
+                    # oversampling
+                    sample_label = np.array(([cls] * features.shape[0]))
+                    z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
+                    x_logit = model.sample(z)
+                    for i in range(classifier_list):
+                        threshold = classifier_list[i].threshold
                         m_index = estimate(classifier, x_logit, threshold, y, target)
                         sample_y = sample_label[m_index]
                         s_index = estimate(o_classifier, x_logit, threshold, y, target)
@@ -65,16 +80,16 @@ def start_train(epochs, target, threshold, method, model, classifier, o_classifi
                         total_sample_idx = merge_list(s_index[0], m_index[0])
                         total_x_sample = tf.concat((x,x_logit.numpy()[m_index]), axis=0)
                         total_label = tf.concat((y, sample_label[m_index]), axis=0)
-
-                        _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label, method=method)
-
-                        metrix['valid_sample'].append([len(sample_y)/len(sample_label),
-                                                       len(o_sample_y)/len(sample_label)])
-                        metrix['total_sample'] = metrix['total_sample'] + list(sample_label)
-                        metrix['total_valid_sample']  = metrix['total_valid_sample'] + list(sample_y)
-                    o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
-                    o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
-                return metrix
+                        metrix_list[i]['valid_sample'].append([len(sample_y),
+                                                       len(o_sample_y)])
+                        metrix_list[i]['total_sample'] = metrix['total_sample'] + list(sample_label)
+                        metrix_list[i]['total_valid_sample'] = metrix['total_valid_sample'] + list(sample_y)
+                        with tf.GradientTape() as o_tape:
+                            _, _, o_loss = compute_loss(model, classifier_list[i], total_x_sample,
+                                                        total_label, method=method)
+                        o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
+                        optimizer.apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
+                return metrix_list
             else:
                 r = 5
                 n = 10
@@ -98,118 +113,93 @@ def start_train(epochs, target, threshold, method, model, classifier, o_classifi
                             metrix['total_sample'] + list(y)
                             metrix['total_valid_sample'] + list((y.numpy()[total_sample_idx]))
                         o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
-                        o_optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
-        else:
-            with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape:
-                ori_loss, _, encode_loss = compute_loss(model, classifier, x, y, method=method)
-            sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
-            cls_gradients = cls_tape.gradient(encode_loss, classifier.trainable_variables)
-            cls_optimizer.apply_gradients(zip(cls_gradients, classifier.trainable_variables))
-            sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
-    checkpoint_path = "./checkpoints/{}/{}".format(date, filePath)
-    ckpt = tf.train.Checkpoint(sim_clr=model,
-                               clssifier = classifier,
-                               o_classifier=o_classifier,
-                               optimizer=sim_optimizer,
-                               cls_optimizer=cls_optimizer)
-    ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
-    if ckpt_manager.latest_checkpoint:
-        ckpt.restore(ckpt_manager.latest_checkpoint)
-        print('Latest checkpoint restored!!')
-    display.clear_output(wait=False)
+                        optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
 
-    result_dir = "./score/{}/{}".format(date, filePath)
-    if os.path.isfile(result_dir+'/result.csv'):
-        e = pd.read_csv(result_dir+'/result.csv').index[-1]
-    else:
-        e = 0
-    for epoch in range(epochs):
-        e += 1
-        start_time = time.time()
-
-
+    result_dir_list = []
+    for i in threshold_list:
+        result_dir = "./score/{}/{}/".format(date, filePath, i)
+        result_dir_list.append(result_dir)
+        if os.path.isfile(result_dir+'/result.csv'):
+            e = pd.read_csv(result_dir+'/result.csv').index[-1]
+    e = 0
+    metrix_list = []
+    for _ in threshold_list:
         metrix = {}
         metrix['valid_sample'] = []
         metrix['total_sample'] = []
         metrix['total_valid_sample'] = []
+        metrix_list.append(metrix)
 
-
+    for epoch in range(epochs):
+        e += 1
+        start_time = time.time()
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            metrix = train_step(model, classifier, o_classifier,
-            x, y, sim_optimizer, cls_optimizer, oversample=True, threshold=threshold, metrix=metrix)
+            metrix_list = train_step(model, classifier, o_classifier,
+            x, y, oversample=True, threshold=threshold, metrix_list=metrix_list)
 
 
-        #generate_and_save_images(model, epochs, r_sample, "rotate_image")
+            #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
-
-            valid_sample = np.array(metrix['valid_sample'])
-            total_sample = np.array(metrix['total_sample'])
-            pass_pre_train_classifier = np.mean(valid_sample[:, 0])
-            pass_o_classifier = np.mean(valid_sample[:, 1])
-            total_valid_sample = np.array(metrix['total_valid_sample'])
-
-
             end_time = time.time()
-            elbo_loss = tf.keras.metrics.Mean()
-            pre_train_g_mean = tf.keras.metrics.Mean()
-            pre_train_acsa = tf.keras.metrics.Mean()
-            o_g_mean = tf.keras.metrics.Mean()
-            o_acsa = tf.keras.metrics.Mean()
-            ckpt_save_path = ckpt_manager.save()
-            print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
-                                                        ckpt_save_path))
-            ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
-            pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
-            _, o_h, _ = compute_loss(model, o_classifier, test_set[0], test_set[1])
-            oAsca, oGMean, pre_tpr, pre_confMat, pre_acc = acc_metrix(o_h.numpy().argmax(-1), test_set[1])
-            total_loss = ori_loss
-
-            pre_train_g_mean(pre_g_mean)
-            pre_train_acsa(pre_acsa)
-            o_g_mean(oGMean)
-            o_acsa(oAsca)
-            elbo_loss(total_loss)
+            for i in range(len(threshold_list)):
+                ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
+                pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
+                _, o_h, _ = compute_loss(model, classifier_list[i], test_set[0], test_set[1])
+                oAsca, oGMean, pre_tpr, pre_confMat, pre_acc = acc_metrix(o_h.numpy().argmax(-1), test_set[1])
+                total_loss = ori_loss
 
 
-            elbo = -elbo_loss.result()
-            pre_train_g_mean_acc = pre_train_g_mean.result()
-            pre_train_acsa_acc = pre_train_acsa.result()
-            o_acsa_acc = o_acsa.result()
-            o_g_mean_acc = o_g_mean.result()
+                elbo = -ori_loss
+                pre_train_g_mean_acc = pre_g_mean
+                pre_train_acsa_acc = pre_acsa
+                o_acsa_acc = oAsca
+                o_g_mean_acc = oGMean
 
-            result = {
-                "elbo": elbo,
-                "pre_g_mean": pre_train_g_mean_acc,
-                'pre_acsa': pre_train_acsa_acc,
-                'o_g_mean': o_g_mean_acc,
-                'o_acsa': o_acsa_acc,
-                'pass_pre_train_classifier': pass_pre_train_classifier,
-                'pass_o_classifier': pass_o_classifier
-            }
-            for i in range(model.num_cls):
-                name = 'cls{}'.format(i)
-                valid_sample_num = np.sum(total_valid_sample == i)
-                total_gen_num = np.sum(total_sample.flatten() == i)
-                if (valid_sample_num == 0):
-                    result[name] = 0
-                else:
-                    result[name] = valid_sample_num / total_gen_num
-            df = pd.DataFrame(result, index=[e], dtype=np.float32)
-            if not os.path.exists(result_dir):
-                os.makedirs(result_dir)
-            if not os.path.isfile(result_dir+'/result.csv'):
-                df.to_csv(result_dir+'/result.csv')
-            else:  # else it exists so append without writing the header
-                df.to_csv(result_dir+'/result.csv', mode='a', header=False)
+                valid_sample = np.array(metrix[i]['valid_sample'])
+                total_sample = np.array(metrix[i]['total_sample'])
+                pass_pre_train_classifier = valid_sample[:, 0]/len(total_sample.flatten())
+                pass_o_classifier = valid_sample[:, 1]/len(total_sample.flatten())
+                total_valid_sample = np.array(metrix['total_valid_sample'])
 
-            print('*' * 20)
-            print('Epoch: {}, elbo: {}, \n'
-                  ' pre_g_means: {}, pre_acsa: {}, \n, o_g_means:{},  o_acsa:{}, \n' 
-                  'time elapse for current epoch: {}'
-                  .format(epoch+1, elbo,pre_train_g_mean_acc,
-                          pre_train_acsa_acc, o_g_mean_acc, o_acsa_acc,
-                          end_time - start_time))
-            print('*' * 20)
+                ckpt_save_path = checkpoints_list[i].save()
+                print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
+                                                                    ckpt_save_path))
+
+                result_dir = result_dir_list[i]
+
+                result = {
+                    "elbo": elbo,
+                    "pre_g_mean": pre_train_g_mean_acc,
+                    'pre_acsa': pre_train_acsa_acc,
+                    'o_g_mean': o_g_mean_acc,
+                    'o_acsa': o_acsa_acc,
+                    'pass_pre_train_classifier': pass_pre_train_classifier,
+                    'pass_o_classifier': pass_o_classifier
+                }
+                for i in range(model.num_cls):
+                    name = 'cls{}'.format(i)
+                    valid_sample_num = np.sum(total_valid_sample == i)
+                    total_gen_num = np.sum(total_sample.flatten() == i)
+                    if (valid_sample_num == 0):
+                        result[name] = 0
+                    else:
+                        result[name] = valid_sample_num / total_gen_num
+                df = pd.DataFrame(result, index=[e], dtype=np.float32)
+                if not os.path.exists(result_dir):
+                    os.makedirs(result_dir)
+                if not os.path.isfile(result_dir+'/result.csv'):
+                    df.to_csv(result_dir+'/result.csv')
+                else:  # else it exists so append without writing the header
+                    df.to_csv(result_dir+'/result.csv', mode='a', header=False)
+
+                print('*' * 20)
+                print('Epoch: {}, threshld:{} ,elbo: {}, \n'
+                      ' o_g_means:{},  o_acsa:{}, \n' 
+                      'time elapse for current epoch: {}'
+                      .format(epoch+1, elbo, classifier_list[i].threshold,
+                              o_g_mean_acc, o_acsa_acc,
+                              end_time - start_time))
+                print('*' * 20)
     #compute_and_save_inception_score(model, file_path)
 
 
