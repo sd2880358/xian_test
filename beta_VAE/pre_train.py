@@ -93,7 +93,7 @@ def start_train(epochs, model, classifier, method,
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
             ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
-            pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1].numpy())
+            pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
             total_loss = ori_loss
 
             pre_train_g_mean(pre_g_mean)

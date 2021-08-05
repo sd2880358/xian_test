@@ -158,18 +158,17 @@ def start_train(epochs, target, threshold, method, model, classifier, o_classifi
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            for t_x, t_y in tf.data.Dataset.zip((test_set[0], test_set[1])):
-                ori_loss, h, _ = compute_loss(model, classifier, t_x, t_y)
-                pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), t_y.numpy())
-                _, o_h, _ = compute_loss(model, o_classifier, t_x, t_y)
-                oAsca, oGMean, pre_tpr, pre_confMat, pre_acc = acc_metrix(o_h.numpy().argmax(-1), t_y.numpy())
-                total_loss = ori_loss
+            ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
+            pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
+            _, o_h, _ = compute_loss(model, o_classifier, test_set[0], test_set[1])
+            oAsca, oGMean, pre_tpr, pre_confMat, pre_acc = acc_metrix(o_h.numpy().argmax(-1), test_set[1])
+            total_loss = ori_loss
 
-                pre_train_g_mean(pre_g_mean)
-                pre_train_acsa(pre_acsa)
-                o_g_mean(oGMean)
-                o_acsa(oAsca)
-                elbo_loss(total_loss)
+            pre_train_g_mean(pre_g_mean)
+            pre_train_acsa(pre_acsa)
+            o_g_mean(oGMean)
+            o_acsa(oAsca)
+            elbo_loss(total_loss)
 
 
             elbo = -elbo_loss.result()
