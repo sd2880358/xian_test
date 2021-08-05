@@ -16,7 +16,7 @@ import os
 from IPython import display
 import math
 import pandas as pd
-from loss import compute_loss, confidence_function, top_loss, acc_metrix
+from loss import compute_loss, confidence_function, top_loss, acc_metrix, indices
 
 
 def estimate(classifier, x_logit, threshold, label, target):
@@ -94,7 +94,7 @@ def start_train(epochs, model, classifier, method,
                                                         ckpt_save_path))
             for t_x, t_y in tf.data.Dataset.zip((test_set[0], test_set[1])):
                 ori_loss, h, _ = compute_loss(model, classifier, t_x, t_y)
-                pre_g_mean, pre_acsa = acc_metrix(h.numpy().argmax(-1), t_y.numpy())
+                pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), t_y.numpy())
                 total_loss = ori_loss
 
                 pre_train_g_mean(pre_g_mean)

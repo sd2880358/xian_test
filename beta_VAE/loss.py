@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from tensorflow.linalg import matvec
-from imblearn.metrics import geometric_mean_score
+from sklearn.metrics import confusion_matrix
 
 def rota_cross_loss(model, x, d, r_x):
     c, s = np.cos(d), np.sin(d)
@@ -228,6 +228,8 @@ def g_means(s, p):
 
 def get_gMeans(y_pred, y_true):
     c = np.bincount(y_true.flatten())
+    s = []
+    p = []
     for i in range(len(c)):
         tmp_pred = np.array([1 if label==i else 0 for label in y_pred])
         tmp_true = np.array([1 if label==i else 0 for label in y_true])
@@ -235,16 +237,6 @@ def get_gMeans(y_pred, y_true):
         p.append(specifity(tmp_pred, tmp_true))
     return g_means(np.mean(s), np.mean(p))
 
-def acsa(y_pred, y_true):
-    correct = np.sum(y_pred[y_pred == y_true]==1)
-    pred = np.sum(y_pred==1)
-    if (correct == 0):
-        if (pred == 0):
-            return 1
-        else:
-            return 0
-    else:
-        return correct/pred
 
 def acc_metrix(y_pred, y_true):
     return geometric_mean_score(y_true, y_pred, average='micro'), acsa_score(y_true, y_pred)
@@ -263,3 +255,13 @@ def acsa_score(y_true, y_pred):
         else:
             acsa.append(corr/total)
     return np.mean(acsa)
+
+def indices(pLabel, tLabel):
+    confMat=confusion_matrix(tLabel, pLabel)
+    nc=np.sum(confMat, axis=1)
+    tp=np.diagonal(confMat)
+    tpr=tp/nc
+    acsa=np.mean(tpr)
+    gm=np.prod(tpr)**(1/confMat.shape[0])
+    acc=np.sum(tp)/np.sum(nc)
+    return acsa, gm, tpr, confMat, acc
