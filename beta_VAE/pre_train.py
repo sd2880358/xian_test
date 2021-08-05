@@ -133,11 +133,11 @@ def start_train(epochs, model, classifier,
 if __name__ == '__main__':
     target = 'margin'
     threshold = 0.95
-    date = '8_3'
+    date = '8_5'
     data_name = 'large_celebA'
-    file_path = 'pre_train_celebA'
+    file_path = 'pre_train_large_celebA'
     dataset = Dataset(data_name)
-    epochs = 100
+    epochs = 200
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     sim_clr = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
     classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
