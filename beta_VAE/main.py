@@ -19,7 +19,7 @@ if __name__ == '__main__':
     o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
     checkpoint = tf.train.Checkpoint(sim_clr=model, clssifier=classifier)
-    checkpoint.restore("./checkpoints/8_3/pre_train_celebA/ckpt-42")
+    checkpoint.restore("./checkpoints/8_3/pre_train_celebA/ckpt-242")
 
     start_train(epochs, target, threshold, model, classifier, o_classifier,
                 [train_set, train_labels],
