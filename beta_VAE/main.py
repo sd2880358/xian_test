@@ -11,9 +11,9 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,7"
     target = 'margin'
     threshold_list = [0.95, 0.96, 0.97, 0.98, 0.99, 1]
-    date = '8_5'
+    date = '8_6'
     data_name = 'large_celebA'
-    file_path = 'celebA_test8'
+    file_path = 'large_celebA_test'
     dataset = Dataset(data_name)
     epochs = 100
     method = 'lsq'
