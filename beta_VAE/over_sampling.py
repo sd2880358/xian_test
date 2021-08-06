@@ -140,8 +140,8 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
             #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
             print('*' * 20)
-            print("Epoch: {}, time elapse for current epoch: {}".format(epoch+1, end_time - start_time))
             end_time = time.time()
+            print("Epoch: {}, time elapse for current epoch: {}".format(epoch + 1, end_time - start_time))
             for i in range(len(threshold_list)):
                 ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
                 pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
@@ -199,6 +199,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                       .format(classifier_list[i].threshold,
                               o_g_mean_acc, o_acsa_acc,
                               ))
+                print("-" * 20)
             print('*' * 20)
     #compute_and_save_inception_score(model, file_path)
 
