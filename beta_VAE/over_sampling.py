@@ -154,11 +154,11 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 o_acsa_acc = oAsca
                 o_g_mean_acc = oGMean
 
-                valid_sample = np.array(metrix[i]['valid_sample'])
-                total_sample = np.array(metrix[i]['total_sample'])
+                valid_sample = np.array(metrix_list[i]['valid_sample'])
+                total_sample = np.array(metrix_list[i]['total_sample'])
                 pass_pre_train_classifier = valid_sample[:, 0]/len(total_sample.flatten())
                 pass_o_classifier = valid_sample[:, 1]/len(total_sample.flatten())
-                total_valid_sample = np.array(metrix['total_valid_sample'])
+                total_valid_sample = np.array(metrix_list['total_valid_sample'])
 
                 ckpt_save_path = checkpoints_list[i].save()
                 print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
