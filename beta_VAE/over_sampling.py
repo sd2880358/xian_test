@@ -175,10 +175,10 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     'pass_pre_train_classifier': pass_pre_train_classifier,
                     'pass_o_classifier': pass_o_classifier
                 }
-                for i in range(model.num_cls):
-                    name = 'cls{}'.format(i)
-                    valid_sample_num = np.sum(total_valid_sample == i)
-                    total_gen_num = np.sum(total_sample.flatten() == i)
+                for cls in range(model.num_cls):
+                    name = 'cls{}'.format(cls)
+                    valid_sample_num = np.sum(total_valid_sample == cls)
+                    total_gen_num = np.sum(total_sample.flatten() == cls)
                     if (valid_sample_num == 0):
                         result[name] = 0
                     else:
@@ -195,7 +195,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 print('Epoch: {}, threshld:{} ,elbo: {}, \n'
                       ' o_g_means:{},  o_acsa:{}, \n' 
                       'time elapse for current epoch: {}'
-                      .format(epoch+1, elbo, classifier_list[i].threshold,
+                      .format(epoch+1, classifier_list[i].threshold, elbo,
                               o_g_mean_acc, o_acsa_acc,
                               end_time - start_time))
                 print('*' * 20)
