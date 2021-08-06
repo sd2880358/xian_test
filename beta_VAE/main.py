@@ -12,7 +12,7 @@ if __name__ == '__main__':
     target = 'margin'
     threshold_list = [0.95]
     date = '8_5'
-    data_name = 'celebA'
+    data_name = 'large_celebA'
     file_path = 'celebA_test8'
     dataset = Dataset(data_name)
     epochs = 100
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
     checkpoint = tf.train.Checkpoint(sim_clr=model, clssifier=classifier)
-    checkpoint.restore("./checkpoints/8_3/pre_train_celebA/ckpt-42")
+    checkpoint.restore("./checkpoints/8_5/pre_train_large_celebA_lsq/ckpt-204")
 
     start_train(epochs, target, threshold_list, method, model, classifier, dataset,
                 [train_set, train_labels],
