@@ -156,8 +156,8 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
 
                 valid_sample = np.array(metrix_list[i]['valid_sample'])
                 total_sample = np.array(metrix_list[i]['total_sample'])
-                pass_pre_train_classifier = valid_sample[:, 0]/len(total_sample.flatten())
-                pass_o_classifier = valid_sample[:, 1]/len(total_sample.flatten())
+                pass_pre_train_classifier = np.sum(valid_sample[:, 0])/len(total_sample.flatten())
+                pass_o_classifier = np.sum(valid_sample[:, 1])/len(total_sample.flatten())
                 total_valid_sample = np.array(metrix_list[i]['total_valid_sample'])
 
                 ckpt_save_path = checkpoints_list[i].save()
