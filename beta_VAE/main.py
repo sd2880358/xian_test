@@ -10,7 +10,7 @@ if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,7"
     target = 'margin'
-    threshold_list = [0.95]
+    threshold_list = [0.95, 0.96, 0.97, 0.98, 0.99, 1]
     date = '8_5'
     data_name = 'large_celebA'
     file_path = 'celebA_test8'
