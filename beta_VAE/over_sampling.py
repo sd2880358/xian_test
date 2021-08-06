@@ -75,7 +75,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
         if (oversample):
             mean, logvar = model.encode(x)
             features = model.reparameterize(mean, logvar)
-            if(model.data=='celebA'):
+            if(model.data=='celebA' or "large_celebA"):
                 for cls in range(model.num_cls):
                     # oversampling
                     sample_label = np.array(([cls] * features.shape[0]))
