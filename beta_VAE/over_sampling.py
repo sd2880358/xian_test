@@ -139,6 +139,8 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
 
             #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
+            print('*' * 20)
+            print("Epoch: {}, time elapse for current epoch: {}".format(epoch+1, end_time - start_time))
             end_time = time.time()
             for i in range(len(threshold_list)):
                 ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
@@ -191,14 +193,13 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 else:  # else it exists so append without writing the header
                     df.to_csv(result_dir+'/result.csv', mode='a', header=False)
 
-                print('*' * 20)
-                print('Epoch: {}, threshld:{} ,elbo: {}, \n'
-                      ' o_g_means:{},  o_acsa:{}, \n' 
-                      'time elapse for current epoch: {}'
-                      .format(epoch+1, classifier_list[i].threshold, elbo,
+
+                print('threshld:{} , \n'
+                      ' o_g_means:{},  o_acsa:{}, \n'
+                      .format(classifier_list[i].threshold,
                               o_g_mean_acc, o_acsa_acc,
-                              end_time - start_time))
-                print('*' * 20)
+                              ))
+            print('*' * 20)
     #compute_and_save_inception_score(model, file_path)
 
 
