@@ -47,7 +47,18 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
     optimizer = tf.keras.optimizers.Adam(1e-4)
     checkpoints_list = []
     classifier_list= []
+    result_dir_list = []
+    metrix_list = []
     for i in threshold_list:
+        metrix = {}
+        metrix['valid_sample'] = []
+        metrix['total_sample'] = []
+        metrix['total_valid_sample'] = []
+        metrix_list.append(metrix)
+        result_dir = "./score/{}/{}/".format(date, filePath, i)
+        result_dir_list.append(result_dir)
+        if os.path.isfile(result_dir + '/result.csv'):
+            e = pd.read_csv(result_dir + '/result.csv').index[-1]
         checkpoint_path = "./checkpoints/{}/{}/{}".format(date, filePath, i)
         o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls, threshold=i)
         ckpt = tf.train.Checkpoint(sim_clr=model,
@@ -60,9 +71,8 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
             print('Latest checkpoint restored!!')
         classifier_list.append(o_classifier)
         checkpoints_list.append(ckpt_manager)
-    def train_step(model, classifier, o_classifier, x,  y, oversample=False, threshold=None, metrix_list=None):
+    def train_step(model, classifier, classifier_list, x,  y, oversample=False, metrix_list=None):
         if (oversample):
-            tmp = []
             mean, logvar = model.encode(x)
             features = model.reparameterize(mean, logvar)
             if(model.data=='celebA'):
@@ -71,7 +81,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     sample_label = np.array(([cls] * features.shape[0]))
                     z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
                     x_logit = model.sample(z)
-                    for i in range(classifier_list):
+                    for i in range(len(classifier_list)):
                         threshold = classifier_list[i].threshold
                         m_index = estimate(classifier, x_logit, threshold, y, target)
                         sample_y = sample_label[m_index]
@@ -115,27 +125,16 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                         optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
 
-    result_dir_list = []
-    for i in threshold_list:
-        result_dir = "./score/{}/{}/".format(date, filePath, i)
-        result_dir_list.append(result_dir)
-        if os.path.isfile(result_dir+'/result.csv'):
-            e = pd.read_csv(result_dir+'/result.csv').index[-1]
+
+
     e = 0
-    metrix_list = []
-    for _ in threshold_list:
-        metrix = {}
-        metrix['valid_sample'] = []
-        metrix['total_sample'] = []
-        metrix['total_valid_sample'] = []
-        metrix_list.append(metrix)
 
     for epoch in range(epochs):
         e += 1
         start_time = time.time()
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            metrix_list = train_step(model, classifier, o_classifier,
-            x, y, oversample=True, threshold=threshold, metrix_list=metrix_list)
+            metrix_list = train_step(model, classifier, classifier_list,
+            x, y, oversample=True, metrix_list=metrix_list)
 
 
             #generate_and_save_images(model, epochs, r_sample, "rotate_image")
@@ -145,7 +144,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
                 pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
                 _, o_h, _ = compute_loss(model, classifier_list[i], test_set[0], test_set[1])
-                oAsca, oGMean, pre_tpr, pre_confMat, pre_acc = acc_metrix(o_h.numpy().argmax(-1), test_set[1])
+                oAsca, oGMean, pre_tpr, pre_confMat, pre_acc = indices(o_h.numpy().argmax(-1), test_set[1])
                 total_loss = ori_loss
 
 
