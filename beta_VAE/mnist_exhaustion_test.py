@@ -49,7 +49,7 @@ if __name__ == '__main__':
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
     checkpoint.restore("./checkpoints/exhaustion_cls2/ckpt-1")
-    threshold = 0.95
+    threshold = 0.9
     tmp_data_list = []
     tmp_label_list = []
     num = 0

@@ -52,7 +52,12 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
     if (model.data == 'mnist'):
         file = np.load('../dataset/mnist_oversample_latent.npz')
         latent = file['latent']
-        latent = tf.da
+        latent_len = latent.shape[0]
+        mnist_train_len = np.load('../dataset/mnist_dataset.npz')['train_images'].shape[0]
+        block = np.ceil(mnist_train_len/32)
+        batch_size = int(np.ceil(latent_len/block))
+        latent = (tf.data.Dataset.from_tensor_slices(latent)
+                    .shuffle(latent, seed=1).batch(batch_size))
     for i in threshold_list:
         metrix = {}
         metrix['valid_sample'] = []
@@ -75,11 +80,11 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
             print('Latest checkpoint restored!!')
         classifier_list.append(o_classifier)
         checkpoints_list.append(ckpt_manager)
-    def train_step(model, classifier, classifier_list, x,  y, oversample=False, metrix_list=None):
+    def train_step(model, classifier, classifier_list, x,  y, oversample=False, metrix_list=None, features=None):
         if (oversample):
-            mean, logvar = model.encode(x)
-            features = model.reparameterize(mean, logvar)
             if(model.data=='celebA' or "large_celebA"):
+                mean, logvar = model.encode(x)
+                features = model.reparameterize(mean, logvar)
                 for cls in range(model.num_cls):
                     # oversampling
                     sample_label = np.array(([cls] * features.shape[0]))
@@ -105,31 +110,27 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         optimizer.apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
                 return metrix_list
             else:
-
-                for dim in range(features.shape[1]):
-                    for replace in triversal_range:
-                            c_features = features.numpy()
-                            c_features[:, dim] = replace
-                            z = tf.concat([c_features, tf.expand_dims(y, 1)], axis=1)
-                            x_logit = model.sample(z)
-                            for i in range(len(classifier_list)):
-                                m_index = estimate(classifier, x_logit, model.threshold, y, target)
-                                sample_y = y.numpy()[m_index]
-                                s_index = estimate(o_classifier, x_logit, model.threshold, y, target)
-                                o_sample_y = y.numpy()[s_index]
-                                total_sample_idx = merge_list(s_index[0], m_index[0])
-                                total_x_sample = x_logit.numpy()[total_sample_idx]
-                                total_label = y.numpy()[total_sample_idx]
-
-                                metrix_list[i]['valid_sample'].append([len(sample_y),
-                                                                       len(o_sample_y)])
-                                metrix_list[i]['total_sample'] = metrix['total_sample'] + list(y)
-                                metrix_list[i]['total_valid_sample'] = metrix['total_valid_sample'] + list(sample_y)
-                                with tf.GradientTape() as o_tape:
-                                    _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label,
-                                                                method=method)
-                                o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
-                                optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
+                for cls in range(model.num_cls):
+                    sample_label = np.array(([cls] * features.shape[0]))
+                    z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
+                    x_logit = model.sample(z)
+                    for i in range(len(classifier_list)):
+                        m_index = estimate(classifier, x_logit, model.threshold, sample_label, target)
+                        sample_y = y.numpy()[m_index]
+                        s_index = estimate(o_classifier, x_logit, model.threshold, sample_label, target)
+                        o_sample_y = y.numpy()[s_index]
+                        total_sample_idx = merge_list(s_index[0], m_index[0])
+                        total_x_sample = x_logit.numpy()[total_sample_idx]
+                        total_label = y.numpy()[total_sample_idx]
+                        metrix_list[i]['valid_sample'].append([len(sample_y),
+                                                               len(o_sample_y)])
+                        metrix_list[i]['total_sample'] = metrix['total_sample'] + list(y)
+                        metrix_list[i]['total_valid_sample'] = metrix['total_valid_sample'] + list(sample_y)
+                        with tf.GradientTape() as o_tape:
+                            _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label,
+                                                        method=method)
+                        o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
+                        optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
 
 
 
@@ -138,9 +139,15 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
     for epoch in range(epochs):
         e += 1
         start_time = time.time()
-        for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            metrix_list = train_step(model, classifier, classifier_list,
-            x, y, oversample=True, metrix_list=metrix_list)
+        if (model.data == 'celebA' or "large_celebA"):
+            for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
+                metrix_list = train_step(model, classifier, classifier_list,
+                x, y, oversample=True, metrix_list=metrix_list)
+
+        elif (model.data == 'mnist'):
+            for x,z,y in tf.data.Dataset.zip((train_set[0], latent, train_set[1])):
+                metrix_list = train_step(model, classifier, classifier_list,
+                x, y, features=z, oversample=True, metrix_list=metrix_list)
 
 
             #generate_and_save_images(model, epochs, r_sample, "rotate_image")
