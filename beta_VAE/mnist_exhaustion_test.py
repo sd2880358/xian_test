@@ -54,7 +54,7 @@ if __name__ == '__main__':
     tmp_label_list = []
     num = 0
     total_length = dataset.shape[0]
-    split_size = 10,0000
+    split_size = 100000
     split = int(np.ceil(total_length / split_size))
     s_idx = 0
     for _ in range(split):
