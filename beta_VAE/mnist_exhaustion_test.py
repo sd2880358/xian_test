@@ -43,7 +43,7 @@ def initial_dataset(m, s, l, save=False):
 if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,7"
-    dataset = initial_dataset(81, 9, [0,1])
+    dataset = initial_dataset(81, 3, [0,1])
     print("dataset has been initial")
     print("the dataset shape is {}".format(dataset.shape))
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
