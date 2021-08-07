@@ -55,7 +55,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
         metrix['total_sample'] = []
         metrix['total_valid_sample'] = []
         metrix_list.append(metrix)
-        result_dir = "./score/{}/{}/".format(date, filePath, i)
+        result_dir = "./score/{}/{}/{}".format(date, filePath, i)
         result_dir_list.append(result_dir)
         if os.path.isfile(result_dir + '/result.csv'):
             e = pd.read_csv(result_dir + '/result.csv').index[-1]
