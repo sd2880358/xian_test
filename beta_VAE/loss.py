@@ -176,7 +176,7 @@ def negative_entropy(data, normalize=False, max_value=None):
     return entropy
 
 def confidence_function(model, data, target='softmax'):
-    result = model.projection(data)
+    result = model.call(data)
     if (target=='softmax'):
         conf = tf.math.reduce_max(tf.nn.softmax(result), 1)
     elif (target == 'negative_entropy'):
