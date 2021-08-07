@@ -53,7 +53,7 @@ if __name__ == '__main__':
     tmp_label_list = []
     num = 0
     for i in range(10):
-        tmp_data = dataset(np.where((conf.numpy()>=threshold) & (l==i)))
+        tmp_data = dataset[np.where((conf.numpy()>=threshold) & (l==i))]
         tmp_label = np.array([i]*len(tmp_data))
         tmp_data_list.append(tmp_data)
         tmp_label_list.append(tmp_label)
