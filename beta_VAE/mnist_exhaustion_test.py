@@ -49,7 +49,7 @@ if __name__ == '__main__':
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
     checkpoint.restore("./checkpoints/exhaustion_cls2/ckpt-1")
-    threshold = 0.9
+    threshold = 0.85
     tmp_data_list = []
     tmp_label_list = []
     num = 0
@@ -67,6 +67,7 @@ if __name__ == '__main__':
             tmp_data_list.append(tmp_data)
             tmp_label_list.append(tmp_label)
             num += len(tmp_data)
+    print(num)
     print('data has been classified!')
     valid_data = np.zeros([num, 9, 9 ,1])
     valid_label = np.zeros([num,])
