@@ -102,28 +102,32 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 return metrix_list
             else:
                 r = 5
-                n = 10
+                n = 11
                 triversal_range = np.linspace(-r, r, n)
                 for dim in range(features.shape[1]):
                     for replace in triversal_range:
-                        with tf.GradientTape() as o_tape:
                             c_features = features.numpy()
                             c_features[:, dim] = replace
                             z = tf.concat([c_features, tf.expand_dims(y, 1)], axis=1)
                             x_logit = model.sample(z)
-                            m_index = estimate(classifier, x_logit, threshold, y, target)
-                            sample_y = y.numpy()[m_index]
-                            s_index = estimate(o_classifier, x_logit, threshold, y, target)
-                            o_sample_y = y.numpy()[s_index]
-                            total_sample_idx = merge_list(s_index[0], m_index[0])
-                            total_x_sample = x_logit.numpy()[total_sample_idx]
-                            total_label = y.numpy()[total_sample_idx]
-                            _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label, method=method)
-                            metrix['valid_sample'].append([len(sample_y)/len(y), len(o_sample_y)/len(y)])
-                            metrix['total_sample'] + list(y)
-                            metrix['total_valid_sample'] + list((y.numpy()[total_sample_idx]))
-                        o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
-                        optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
+                            for i in range(len(classifier_list)):
+                                m_index = estimate(classifier, x_logit, model.threshold, y, target)
+                                sample_y = y.numpy()[m_index]
+                                s_index = estimate(o_classifier, x_logit, model.threshold, y, target)
+                                o_sample_y = y.numpy()[s_index]
+                                total_sample_idx = merge_list(s_index[0], m_index[0])
+                                total_x_sample = x_logit.numpy()[total_sample_idx]
+                                total_label = y.numpy()[total_sample_idx]
+
+                                metrix_list[i]['valid_sample'].append([len(sample_y),
+                                                                       len(o_sample_y)])
+                                metrix_list[i]['total_sample'] = metrix['total_sample'] + list(y)
+                                metrix_list[i]['total_valid_sample'] = metrix['total_valid_sample'] + list(sample_y)
+                                with tf.GradientTape() as o_tape:
+                                    _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label,
+                                                                method=method)
+                                o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
+                                optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
 
 
 

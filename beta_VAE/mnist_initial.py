@@ -39,7 +39,6 @@ def initial_dataset():
              mnist_data=mnist_data.reshape([mnist_data.shape[0], 9, 9]))
 
 if __name__ == '__main__':
-    initial_dataset()
     print("dataset has been initial")
     file = np.load("../dataset/mnist_exhausted_test_initialize.npz")
     dataset = file['mnist_dataset']
