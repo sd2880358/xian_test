@@ -15,7 +15,7 @@ if __name__ == '__main__':
     data_name = 'large_celebA'
     file_path = 'large_celebA_test'
     dataset = Dataset(data_name)
-    epochs = 100
+    epochs = 30
     method = 'lsq'
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     model = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)

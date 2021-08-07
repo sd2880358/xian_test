@@ -28,7 +28,7 @@ if cls_manager.latest_checkpoint:
 classifier.compile(optimizer='adam',
                    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                    metrics=['accuracy'])
-classifier.fit(train_set, train_labels, epochs=100, verbose=1, shuffle=True,
+classifier.fit(train_set, train_labels, epochs=10, verbose=1, shuffle=True,
                batch_size=32, validation_data=(test_set, test_labels))
 ckpt_save_path = cls_manager.save()
 print('Saving checkpoint for epoch {} at {}'.format(1,
