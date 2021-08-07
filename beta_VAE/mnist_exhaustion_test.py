@@ -49,22 +49,29 @@ if __name__ == '__main__':
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
     checkpoint.restore("./checkpoints/exhaustion_cls2/ckpt-1")
-    conf, l = confidence_function(classifier, dataset)
     threshold = 0.95
     tmp_data_list = []
     tmp_label_list = []
     num = 0
-    for i in range(10):
-        tmp_data = dataset[np.where((conf.numpy()>=threshold) & (l==i))]
-        tmp_label = np.array([i]*len(tmp_data))
-        tmp_data_list.append(tmp_data)
-        tmp_label_list.append(tmp_label)
-        num += len(tmp_data)
-
+    total_length = dataset[0]
+    split_size = 256
+    split = int(np.ceil(total_length / split_size))
+    s_idx = 0
+    for _ in range(split):
+        e_idx = s_idx + split_size
+        test_data = dataset[s_idx : e_idx]
+        conf, l = confidence_function(classifier, test_data)
+        for i in range(10):
+            tmp_data = dataset[np.where((conf.numpy()>=threshold) & (l==i))]
+            tmp_label = np.array([i]*len(tmp_data))
+            tmp_data_list.append(tmp_data)
+            tmp_label_list.append(tmp_label)
+            num += len(tmp_data)
+    print('data has been classified!')
     valid_data = np.zeros([num, 9, 9 ,1])
     valid_label = np.zeros([num,])
     idx = 0
-    for i in range(10):
+    for i in range(len(tmp_data_list)):
         l = tmp_data_list[i].shape[0]
         valid_data[idx : idx + l, :, :, :] = tmp_data_list[i]
         valid_label[idx : idx + l] = tmp_label_list[i]
