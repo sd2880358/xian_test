@@ -2,7 +2,7 @@ import numpy as np
 from model2 import Classifier
 import tensorflow as tf
 from loss import confidence_function
-
+import os
 # create a m dimensions list, every s dimension can choose value between l;
 def create_list(m, s, l):
     d = {}
@@ -32,16 +32,17 @@ def flip_number(m, c_i, s, l):
         h = total_list.shape[1]
         return total_list.reshape(w * h, total_list.shape[2])
 
-def initial_dataset():
-    l = [0, 1]
-    mnist_data = create_list(81, 3, l)
-    np.savez('../dataset/mnist_exhausted_test_initialize',
-             mnist_data=mnist_data.reshape([mnist_data.shape[0], 9, 9]))
+def initial_dataset(m, s, l, save=False):
+    mnist_data = create_list(m, s, l)
+    if (save==True):
+        np.savez('../dataset/mnist_exhausted_test_initialize',
+                mnist_data=mnist_data.reshape([mnist_data.shape[0], 9, 9]))
+    return mnist_data
 
 if __name__ == '__main__':
+    dataset = initial_dataset(3, 1, [0,1])
     print("dataset has been initial")
-    file = np.load("../dataset/mnist_exhausted_test_initialize.npz")
-    dataset = file['mnist_dataset']
+    print("the dataset shape is {}".format(dataset.shape))
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
     checkpoint.restore("./checkpoints/exhausion_cls2/ckpt-1")
