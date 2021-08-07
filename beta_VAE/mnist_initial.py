@@ -44,7 +44,7 @@ if __name__ == '__main__':
     print("the dataset shape is {}".format(dataset.shape))
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
-    checkpoint.restore("./checkpoints/exhausion_cls2/ckpt-1")
+    checkpoint.restore("./checkpoints/exhaustion_cls2/ckpt-1")
     conf, l = confidence_function(classifier, dataset, target='margin')
     threshold = 0.95
     tmp_data_list = []
