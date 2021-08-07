@@ -5,7 +5,6 @@ from loss import confidence_function
 import os
 # create a m dimensions list, every s dimension can choose value between l;
 def create_list(m, s, l):
-    d = {}
     initial_list = np.zeros(m)
     return (flip_number(initial_list, 0, s, l))
 
@@ -37,10 +36,10 @@ def initial_dataset(m, s, l, save=False):
     if (save==True):
         np.savez('../dataset/mnist_exhausted_test_initialize',
                 mnist_data=mnist_data.reshape([mnist_data.shape[0], 9, 9]))
-    return mnist_data
+    return mnist_data.reshape([mnist_data.shape[0], 9, 9])
 
 if __name__ == '__main__':
-    dataset = initial_dataset(3, 1, [0,1])
+    dataset = initial_dataset(81, 9, [0,1])
     print("dataset has been initial")
     print("the dataset shape is {}".format(dataset.shape))
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
