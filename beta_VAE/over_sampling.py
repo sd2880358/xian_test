@@ -49,6 +49,10 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
     classifier_list= []
     result_dir_list = []
     metrix_list = []
+    if (model.data == 'mnist'):
+        file = np.load('../dataset/mnist_oversample_latent.npz')
+        latent = file['latent']
+        latent = tf.da
     for i in threshold_list:
         metrix = {}
         metrix['valid_sample'] = []
@@ -101,9 +105,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         optimizer.apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
                 return metrix_list
             else:
-                r = 5
-                n = 11
-                triversal_range = np.linspace(-r, r, n)
+
                 for dim in range(features.shape[1]):
                     for replace in triversal_range:
                             c_features = features.numpy()

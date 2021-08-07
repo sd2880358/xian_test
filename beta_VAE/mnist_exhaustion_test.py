@@ -53,7 +53,7 @@ if __name__ == '__main__':
     tmp_data_list = []
     tmp_label_list = []
     num = 0
-    total_length = dataset[0]
+    total_length = dataset.shape[0]
     split_size = 256
     split = int(np.ceil(total_length / split_size))
     s_idx = 0
