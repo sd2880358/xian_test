@@ -38,19 +38,6 @@ def initial_dataset(m, s, l, save=False):
                 mnist_data=mnist_data.reshape([mnist_data.shape[0], 9, 9]))
     return mnist_data.reshape([mnist_data.shape[0], 9, 9])
 
-def confidence_function(model, data, target='softmax'):
-    result = model.projection(data)
-    if (target=='softmax'):
-        conf = tf.math.reduce_max(tf.nn.softmax(result), 1)
-    elif (target == 'negative_entropy'):
-        value_for_normalizing = 2.302585
-        conf= negative_entropy(result,
-                                normalize=True,
-                                max_value=value_for_normalizing)
-    elif (target == 'margin'):
-        conf, _ = tf.math.top_k(tf.nn.softmax(result), k=2)
-        conf = conf[:, 0] - conf[:, 1]
-    return conf, result.numpy().argmax(-1)
 
 
 if __name__ == '__main__':
