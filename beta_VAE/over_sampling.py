@@ -163,8 +163,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 total_valid_sample = np.array(metrix_list[i]['total_valid_sample'])
 
                 ckpt_save_path = checkpoints_list[i].save()
-                print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
-                                                                    ckpt_save_path))
+                print('Saving checkpoint at {}'.format(ckpt_save_path))
 
                 result_dir = result_dir_list[i]
 
