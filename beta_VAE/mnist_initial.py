@@ -36,7 +36,7 @@ def initial_dataset():
     l = [0, 1]
     mnist_data = create_list(81, 3, l)
     np.savez('../dataset/mnist_exhausted_test_initialize',
-             mnist_data=mnist_data.reshape([mnist_data[0], 9, 9]))
+             mnist_data=mnist_data.reshape([mnist_data.shape[0], 9, 9]))
 
 if __name__ == '__main__':
     initial_dataset()
