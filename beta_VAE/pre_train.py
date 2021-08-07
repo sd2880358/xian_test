@@ -52,14 +52,15 @@ def start_train(epochs, model, classifier, method,
                 train_set, test_set, date, filePath):
     sim_optimizer = tf.keras.optimizers.Adam(1e-4)
     cls_optimizer = tf.keras.optimizers.Adam(1e-4)
-    def train_step(model, classifier, x, y, sim_optimizer,
+    def train_step(model, classifier, x, y, epoch, sim_optimizer,
                    cls_optimizer):
             with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape:
                 ori_loss, _, encode_loss = compute_loss(model, classifier, x, y, method=method)
             sim_gradients = sim_tape.gradient(ori_loss, model.trainable_variables)
-            cls_gradients = cls_tape.gradient(encode_loss, classifier.trainable_variables)
-            cls_optimizer.apply_gradients(zip(cls_gradients, classifier.trainable_variables))
             sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
+            if (epoch <= 30):
+                cls_gradients = cls_tape.gradient(encode_loss, classifier.trainable_variables)
+                cls_optimizer.apply_gradients(zip(cls_gradients, classifier.trainable_variables))
     checkpoint_path = "./checkpoints/{}/{}".format(date, filePath)
     ckpt = tf.train.Checkpoint(sim_clr=model,
                                clssifier=classifier,
@@ -80,7 +81,7 @@ def start_train(epochs, model, classifier, method,
         e += 1
         start_time = time.time()
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            train_step(model, classifier, x, y, sim_optimizer, cls_optimizer)
+            train_step(model, classifier, x, y, epoch, sim_optimizer, cls_optimizer)
 
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
@@ -130,6 +131,8 @@ def start_train(epochs, model, classifier, method,
 
 
 if __name__ == '__main__':
+    os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,7"
     target = 'margin'
     threshold = 0.95
     date = '8_5'

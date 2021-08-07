@@ -1,6 +1,7 @@
 from model2 import Classifier
 import tensorflow as tf
 from dataset import preprocess_images
+import numpy as np
 
 
 optimizer = tf.keras.optimizers.Adam(1e-4)
@@ -13,8 +14,9 @@ classifier = Classifier(shape=[9, 9, 1], num_cls=10)
 train_set = preprocess_images(train_set, shape=[28,28,1])
 test_set = preprocess_images(test_set, shape=[28,28,1])
 
-train_set = tf.image.resize(train_set, [9,9])
-test_set = tf.image.resize(test_set, [9,9])
+train_set = np.round(tf.image.resize(train_set, [9,9]), 0)
+test_set = np.round(tf.image.resize(test_set, [9,9]), 0)
+
 
 filePath = "./exhaustion_cls2"
 classifier_path = "./checkpoints/" + filePath
