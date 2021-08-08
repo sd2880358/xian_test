@@ -49,6 +49,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
     classifier_list= []
     result_dir_list = []
     metrix_list = []
+    train_images_without_normalize, train_labels_without_normalize = dataset.load_data(normalize=False)
     if (model.data == 'mnist'):
         file = np.load('../dataset/mnist_oversample_latent.npz')
         latent = file['latent']
@@ -64,6 +65,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
         metrix['valid_sample'] = []
         metrix['total_sample'] = []
         metrix['total_valid_sample'] = []
+        metrix['train_acc'] = []
         metrix_list.append(metrix)
         result_dir = "./score/{}/{}/{}".format(date, filePath, i)
         result_dir_list.append(result_dir)
@@ -108,7 +110,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                             _, _, o_loss = compute_loss(model, classifier_list[i], total_x_sample,
                                                         total_label, method=method)
                         o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
-                        optimizer_list.apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
+                        optimizer_list[i].apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
                 return metrix_list
             else:
                 for cls in range(model.num_cls):
@@ -150,6 +152,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
 
             #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
+
             print('*' * 20)
             end_time = time.time()
             print("Epoch: {}, time elapse for current epoch: {}".format(epoch + 1, end_time - start_time))
@@ -163,6 +166,9 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 pre_train_acsa_acc = pre_acsa
                 o_acsa_acc = oAsca
                 o_g_mean_acc = oGMean
+                _, train_h, _ = compute_loss(model, classifier_list[i],
+                                           train_images_without_normalize, train_labels_without_normalize)
+                acc_in_training = np.sum(train_h == train_labels_without_normalize)/len(train_labels_without_normalize)
 
                 valid_sample = np.array(metrix_list[i]['valid_sample'])
                 total_sample = np.array(metrix_list[i]['total_sample'])
@@ -181,6 +187,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     'pre_acsa': pre_train_acsa_acc,
                     'o_g_mean': o_g_mean_acc,
                     'o_acsa': o_acsa_acc,
+                    'acc_in_training': acc_in_training,
                     'pass_pre_train_classifier': pass_pre_train_classifier,
                     'pass_o_classifier': pass_o_classifier
                 }

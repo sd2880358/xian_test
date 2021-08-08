@@ -71,18 +71,17 @@ class Dataset():
       self.latent_dims = 128
       self.irs = [15000, 1500, 750, 300, 150]
 
-  def load_data(self):
+  def load_data(self, normalize=True):
     datasets = self.switcher[self.dataset]
     (train_images, train_labels)  = datasets['train_images'], datasets['train_labels']
     (test_images, test_labels) = datasets['test_images'], datasets['test_labels']
 
-    train_images = (tf.data.Dataset.from_tensor_slices(train_images)
-                    .shuffle(len(train_images), seed=1).batch(self.batch_size))
+    if (normalize):
+      train_images = (tf.data.Dataset.from_tensor_slices(train_images)
+                      .shuffle(len(train_images), seed=1).batch(self.batch_size))
 
-    train_labels = (tf.data.Dataset.from_tensor_slices(train_labels)
-                    .shuffle(len(train_labels), seed=1).batch(self.batch_size))
-
-
+      train_labels = (tf.data.Dataset.from_tensor_slices(train_labels)
+                      .shuffle(len(train_labels), seed=1).batch(self.batch_size))
     return (train_images, train_labels), (test_images, test_labels)
 
 if __name__ == '__main__':

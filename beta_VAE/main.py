@@ -20,10 +20,9 @@ if __name__ == '__main__':
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     model = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
     classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
-    o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
     checkpoint = tf.train.Checkpoint(sim_clr=model, clssifier=classifier)
-    checkpoint.restore("./checkpoints/8_5/pre_train_large_celebA_lsq/ckpt-55")
+    checkpoint.restore("./checkpoints/8_5/pre_train_large_celebA_lsq/ckpt-20")
 
     start_train(epochs, target, threshold_list, method, model, classifier, dataset,
                 [train_set, train_labels],
