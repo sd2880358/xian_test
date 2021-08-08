@@ -68,8 +68,10 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
         metrix_list.append(metrix)
         result_dir = "./score/{}/{}/{}".format(date, filePath, i)
         result_dir_list.append(result_dir)
+        '''
         if os.path.isfile(result_dir + '/result.csv'):
             e = pd.read_csv(result_dir + '/result.csv').index[-1]
+        '''
         checkpoint_path = "./checkpoints/{}/{}/{}".format(date, filePath, i)
         o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls, threshold=i)
         ckpt = tf.train.Checkpoint(sim_clr=model,
