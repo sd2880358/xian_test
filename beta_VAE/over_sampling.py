@@ -92,9 +92,9 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     x_logit = model.sample(z)
                     for i in range(len(classifier_list)):
                         threshold = classifier_list[i].threshold
-                        m_index = estimate(classifier, x_logit, threshold, y, target)
+                        m_index = estimate(classifier, x_logit, threshold, sample_label, target)
                         sample_y = sample_label[m_index]
-                        s_index = estimate(o_classifier, x_logit, threshold, y, target)
+                        s_index = estimate(o_classifier, x_logit, threshold, sample_label, target)
                         o_sample_y = sample_label[s_index]
                         total_sample_idx = merge_list(s_index[0], m_index[0])
                         total_x_sample = tf.concat((x,x_logit.numpy()[m_index]), axis=0)
