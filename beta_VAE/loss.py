@@ -158,9 +158,9 @@ def top_loss(model, h, y, method):
         ))
     elif (method == 'lsq'):
         y_pred = tf.nn.softmax(h)
-        loss_t = tf.losses.mean_squared_error(y_true=labels, y_pred=y_pred)
+        loss_t = tf.reduce_mean(tf.losses.mean_squared_error(y_true=labels, y_pred=y_pred))
 
-    return tf.reduce_mean(loss_t)
+    return loss_t
 
 
 def negative_entropy(data, normalize=False, max_value=None):
