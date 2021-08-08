@@ -140,7 +140,7 @@ if __name__ == '__main__':
     file_path = 'pre_train_mnist_lsq'
     dataset = Dataset(data_name)
     epochs = 100
-    c_epochs = 30
+    c_epochs = 5
     method = 'lsq'
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     sim_clr = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
