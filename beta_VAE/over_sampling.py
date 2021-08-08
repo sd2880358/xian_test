@@ -181,7 +181,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     'o_g_mean': o_g_mean_acc,
                     'o_acsa': o_acsa_acc,
                     'pass_pre_train_classifier': pass_pre_train_classifier,
-                    'valid_sample': np.sum(valid_sample_num[:, 0]),
+                    'valid_sample': np.sum(valid_sample[:, 0]),
                     'pass_o_classifier': pass_o_classifier
                 }
                 for cls in range(model.num_cls):
