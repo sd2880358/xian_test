@@ -126,8 +126,8 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
                     metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
                 with tf.GradientTape() as o_tape:
-                    _, o_loss = classifier_loss(model, classifier_list[i], total_x_sample,
-                                                    total_label, method=method)
+                    _, o_loss = classifier_loss(classifier_list[i], total_x_sample,
+                                                total_label, method=method)
                 o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
                 optimizer_list[i].apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
             return metrix_list
@@ -184,10 +184,10 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
             print('*' * 20)
             end_time = time.time()
             print("Epoch: {}, time elapse for current epoch: {}".format(epoch + 1, end_time - start_time))
-            h, _ = classifier_loss(model, classifier, test_set[0], test_set[1])
+            h, _ = classifier_loss(classifier, test_set[0], test_set[1])
             pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
             for i in range(len(threshold_list)):
-                o_h, _ = classifier_loss(model, classifier_list[i], test_set[0], test_set[1])
+                o_h, _ = classifier_loss(classifier_list[i], test_set[0], test_set[1])
                 oAsca, oGMean, o_tpr, o_confMat, o_acc = indices(o_h.numpy().argmax(-1), test_set[1])
                 pre_train_g_mean_acc = pre_g_mean
                 pre_train_acsa_acc = pre_acsa
