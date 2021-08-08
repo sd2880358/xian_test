@@ -84,7 +84,7 @@ def start_train(epochs, model, classifier, method,
             train_step(model, classifier, x, y, epoch, sim_optimizer, cls_optimizer)
 
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
-        if (epoch +1)%1 == 0:
+        if (epoch +1)%5 == 0:
 
             end_time = time.time()
             elbo_loss = tf.keras.metrics.Mean()
@@ -132,12 +132,12 @@ def start_train(epochs, model, classifier, method,
 
 if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,7"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
     target = 'margin'
     threshold = 0.95
     date = '8_5'
-    data_name = 'large_celebA'
-    file_path = 'pre_train_large_celebA_lsq'
+    data_name = 'celebA'
+    file_path = 'pre_train_celebA_lsq'
     dataset = Dataset(data_name)
     epochs = 200
     method = 'lsq'

@@ -42,14 +42,14 @@ def initial_dataset(m, s, l, save=False):
 
 if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,7"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
     dataset = initial_dataset(81, 3, [0,1])
     print("dataset has been initial")
     print("the dataset shape is {}".format(dataset.shape))
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
     checkpoint.restore("./checkpoints/exhaustion_cls2/ckpt-1")
-    threshold = 0.85
+    threshold = [0.95, 0.95, 0.95, 0.5, 0.8, 0.5, 0.7, 0.95, 0.95, 0.7]
     tmp_data_list = []
     tmp_label_list = []
     num = 0
@@ -61,8 +61,8 @@ if __name__ == '__main__':
         e_idx = s_idx + split_size
         test_data = dataset[s_idx : e_idx]
         conf, l = confidence_function(classifier, test_data)
-        for i in range(10):
-            tmp_data = dataset[np.where((conf.numpy()>=threshold) & (l==i))]
+        for i in range(len(threshold)):
+            tmp_data = test_data[np.where((conf.numpy()>=threshold[i]) & (l==i))]
             tmp_label = np.array([i]*len(tmp_data))
             tmp_data_list.append(tmp_data)
             tmp_label_list.append(tmp_label)
