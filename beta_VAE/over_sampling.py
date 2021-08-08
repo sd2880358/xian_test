@@ -101,8 +101,8 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         total_label = tf.concat((y, sample_label[m_index]), axis=0)
                         metrix_list[i]['valid_sample'].append([len(sample_y),
                                                        len(o_sample_y)])
-                        metrix_list[i]['total_sample'] = metrix['total_sample'] + list(sample_label)
-                        metrix_list[i]['total_valid_sample'] = metrix['total_valid_sample'] + list(sample_y)
+                        metrix_list[i]['total_sample'] = metrix_list['total_sample'] + list(sample_label)
+                        metrix_list[i]['total_valid_sample'] = metrix_list['total_valid_sample'] + list(sample_y)
                         with tf.GradientTape() as o_tape:
                             _, _, o_loss = compute_loss(model, classifier_list[i], total_x_sample,
                                                         total_label, method=method)
@@ -124,8 +124,8 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         total_label = sample_label.numpy()[total_sample_idx]
                         metrix_list[i]['valid_sample'].append([len(sample_y),
                                                                len(o_sample_y)])
-                        metrix_list[i]['total_sample'] = metrix['total_sample'] + list(y)
-                        metrix_list[i]['total_valid_sample'] = metrix['total_valid_sample'] + list(sample_y)
+                        metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
+                        metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
                         with tf.GradientTape() as o_tape:
                             _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label,
                                                         method=method)
