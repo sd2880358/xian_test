@@ -89,7 +89,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
                 total_x_sample = x
                 total_label = y
-                for cls in range(model.num_cls):
+                for cls in range(1, model.num_cls):
                     # oversampling
                     sample_label = np.array(([cls] * features.shape[0]))
                     z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
