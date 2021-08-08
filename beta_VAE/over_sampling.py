@@ -94,10 +94,10 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         threshold = classifier_list[i].threshold
                         m_index = estimate(classifier, x_logit, threshold, sample_label, target)
                         sample_y = sample_label[m_index]
-                        s_index = estimate(o_classifier, x_logit, threshold, sample_label, target)
+                        s_index = estimate(classifier_list[i], x_logit, threshold, sample_label, target)
                         o_sample_y = sample_label[s_index]
                         total_sample_idx = merge_list(s_index[0], m_index[0])
-                        total_x_sample = tf.concat((x,x_logit.numpy()[m_index]), axis=0)
+                        total_x_sample = tf.concat((x, x_logit.numpy()[m_index]), axis=0)
                         total_label = tf.concat((y, sample_label[m_index]), axis=0)
                         metrix_list[i]['valid_sample'].append([len(sample_y),
                                                        len(o_sample_y)])
@@ -116,12 +116,12 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     x_logit = model.sample(z)
                     for i in range(len(classifier_list)):
                         m_index = estimate(classifier, x_logit, model.threshold, sample_label, target)
-                        sample_y = y.numpy()[m_index]
+                        sample_y = sample_label.numpy()[m_index]
                         s_index = estimate(o_classifier, x_logit, model.threshold, sample_label, target)
-                        o_sample_y = y.numpy()[s_index]
+                        o_sample_y = sample_label.numpy()[s_index]
                         total_sample_idx = merge_list(s_index[0], m_index[0])
                         total_x_sample = x_logit.numpy()[total_sample_idx]
-                        total_label = y.numpy()[total_sample_idx]
+                        total_label = sample_label.numpy()[total_sample_idx]
                         metrix_list[i]['valid_sample'].append([len(sample_y),
                                                                len(o_sample_y)])
                         metrix_list[i]['total_sample'] = metrix['total_sample'] + list(y)
@@ -131,9 +131,6 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                                                         method=method)
                         o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
                         optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
-
-
-
     e = 0
 
     for epoch in range(epochs):
