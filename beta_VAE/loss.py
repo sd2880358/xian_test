@@ -82,6 +82,10 @@ def rotate_vector(vector, matrix):
     test = matvec(matrix, vector)
     return test
 
+def classifier_loss(classifier, x, y, method):
+    h = classifier.projection(x)
+    return h, top_loss(classifier, h, y, method)
+
 def compute_loss(model, classifier, x, y, method='cross_entropy', loss='cross_entropy'):
     beta = model.beta
     mean, logvar = model.encode(x)

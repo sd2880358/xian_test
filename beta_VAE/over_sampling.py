@@ -10,12 +10,36 @@ import os
 from IPython import display
 import math
 import pandas as pd
-from loss import compute_loss, confidence_function, top_loss, acc_metrix, indices
+from loss import classifier_loss, confidence_function, top_loss, acc_metrix, indices
+from tensorflow.keras.models import clone_model
 
 
 def estimate(classifier, x_logit, threshold, label, target):
     conf, l = confidence_function(classifier, x_logit, target=target)
     return np.where((conf.numpy()>=threshold) & (l==label))
+
+def high_performance(classifier, i, x, oversample, y, oversample_label, method):
+    optimizer = tf.keras.optimizers.Adam(1e-4)
+    model_one = clone_model(classifier)
+    model_two = clone_model(classifier)
+    with tf.GradientTape() as m_one_tape, tf.GradientTape() as m_two_tape:
+        _, m_one_loss = classifier_loss(model_one, x,
+                                    y, method=method)
+        _, m_two_loss = classifier_loss(model_two, oversample, oversample_label, method=method)
+    m_one_gradients = m_one_tape.gradient(m_one_loss, model_one.trainable_variables)
+    optimizer.apply_gradients(zip(m_one_gradients, model_one.trainable_variables))
+    m_two_gradients = m_two_tape.gradient(m_two_loss, model_two.trainable_variables)
+    optimizer.apply_gradients(zip(m_two_gradients, model_two.trainable_variables))
+    m_one_pre = model_one.call(x)
+    m_one_acc = np.sum(m_one_pre.numpy().argmax(-1) == y)
+    m_two_pre = model_two.call(x)
+    m_two_acc = np.sum(m_two_pre.numpy().argmax(-1) == y)
+
+    if (m_one_acc > m_two_acc):
+        return model_one
+    else:
+        return  model_two
+
 
 def merge_list(l1, l2):
     in_l1 = set(l1)
@@ -48,7 +72,6 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
     checkpoints_list = []
     classifier_list= []
     result_dir_list = []
-    metrix_list = []
     if (model.data == 'mnist'):
         file = np.load('../dataset/mnist_oversample_latent.npz')
         latent = file['latent']
@@ -62,10 +85,6 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
         optimizer_list.append(tf.keras.optimizers.Adam(1e-4))
         result_dir = "./score/{}/{}/{}".format(date, filePath, i)
         result_dir_list.append(result_dir)
-        '''
-        if os.path.isfile(result_dir + '/result.csv'):
-            e = pd.read_csv(result_dir + '/result.csv').index[-1]
-        '''
         checkpoint_path = "./checkpoints/{}/{}/{}".format(date, filePath, i)
         o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls, threshold=i)
         ckpt = tf.train.Checkpoint(sim_clr=model,
@@ -107,7 +126,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
                     metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
                 with tf.GradientTape() as o_tape:
-                    _, _, o_loss = compute_loss(model, classifier_list[i], total_x_sample,
+                    _, o_loss = classifier_loss(model, classifier_list[i], total_x_sample,
                                                     total_label, method=method)
                 o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
                 optimizer_list[i].apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
@@ -136,10 +155,9 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
                         optimizer_list.apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
             '''
-    e = 0
 
     for epoch in range(epochs):
-        e += 1
+        metrix_list = []
         for _ in threshold_list:
             metrix = {}
             metrix['valid_sample'] = []
@@ -166,12 +184,11 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
             print('*' * 20)
             end_time = time.time()
             print("Epoch: {}, time elapse for current epoch: {}".format(epoch + 1, end_time - start_time))
-            ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
+            h, _ = classifier_loss(model, classifier, test_set[0], test_set[1])
             pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
             for i in range(len(threshold_list)):
-                _, o_h, _ = compute_loss(model, classifier_list[i], test_set[0], test_set[1])
+                o_h, _ = classifier_loss(model, classifier_list[i], test_set[0], test_set[1])
                 oAsca, oGMean, o_tpr, o_confMat, o_acc = indices(o_h.numpy().argmax(-1), test_set[1])
-                elbo = -ori_loss
                 pre_train_g_mean_acc = pre_g_mean
                 pre_train_acsa_acc = pre_acsa
                 o_acsa_acc = oAsca
@@ -189,7 +206,6 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 result_dir = result_dir_list[i]
 
                 result = {
-                    "elbo": elbo,
                     "pre_g_mean": pre_train_g_mean_acc,
                     'pre_acsa': pre_train_acsa_acc,
                     'o_g_mean': o_g_mean_acc,
@@ -211,6 +227,10 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
 
                     else:
                         result[name] = valid_sample_num / total_gen_num
+                if os.path.isfile(result_dir + '/result.csv'):
+                    e = pd.read_csv(result_dir + '/result.csv').index[-1] + epoch + 1
+                else:
+                    e = epoch + 1
                 df = pd.DataFrame(result, index=[e], dtype=np.float32)
                 if not os.path.exists(result_dir):
                     os.makedirs(result_dir)
