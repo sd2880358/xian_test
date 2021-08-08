@@ -60,12 +60,6 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     .shuffle(latent, seed=1).batch(batch_size))
     for i in threshold_list:
         optimizer_list.append(tf.keras.optimizers.Adam(1e-4))
-        metrix = {}
-        metrix['valid_sample'] = []
-        metrix['total_sample'] = []
-        metrix['total_valid_sample'] = []
-        metrix['train_acc'] = []
-        metrix_list.append(metrix)
         result_dir = "./score/{}/{}/{}".format(date, filePath, i)
         result_dir_list.append(result_dir)
         '''
@@ -90,6 +84,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 mean, logvar = model.encode(x)
                 features = model.reparameterize(mean, logvar)
                 for i in range(len(classifier_list)):
+                    # get the accuracy during training
                     label_on_train = classifier_list[i].call(x).numpy().argmax(-1)
                     metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
                     total_x_sample = x
@@ -143,6 +138,14 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
 
     for epoch in range(epochs):
         e += 1
+        for _ in threshold:
+            metrix = {}
+            metrix['valid_sample'] = []
+            metrix['total_sample'] = []
+            metrix['total_valid_sample'] = []
+            metrix['train_acc'] = []
+            metrix_list.append(metrix)
+
         start_time = time.time()
         if (model.data == 'celebA' or "large_celebA"):
             for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
