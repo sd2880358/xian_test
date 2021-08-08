@@ -156,7 +156,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
             pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
             for i in range(len(threshold_list)):
                 _, o_h, _ = compute_loss(model, classifier_list[i], test_set[0], test_set[1])
-                oAsca, oGMean, o_pre_tpr, o_pre_confMat, o_pre_acc = indices(o_h.numpy().argmax(-1), test_set[1])
+                oAsca, oGMean, o_tpr, o_confMat, o_acc = indices(o_h.numpy().argmax(-1), test_set[1])
                 elbo = -ori_loss
                 pre_train_g_mean_acc = pre_g_mean
                 pre_train_acsa_acc = pre_acsa
@@ -187,7 +187,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 for cls in range(model.num_cls):
                     cls_acc = 'acc_in_cls{}'.format(cls)
                     name = 'valid_ratio_in_cls{}'.format(cls)
-                    result[cls_acc] = o_pre_acc[i]
+                    result[cls_acc] = o_tpr[i]
                     valid_sample_num = np.sum(total_valid_sample == cls)
                     total_gen_num = np.sum(total_sample.flatten() == cls)
                     if (valid_sample_num == 0):
