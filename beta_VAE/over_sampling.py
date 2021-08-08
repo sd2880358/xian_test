@@ -138,7 +138,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
 
     for epoch in range(epochs):
         e += 1
-        for _ in threshold:
+        for _ in threshold_list:
             metrix = {}
             metrix['valid_sample'] = []
             metrix['total_sample'] = []
