@@ -187,7 +187,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     cls_acc = 'acc_in_cls{}'.format(cls)
                     name = 'valid_ratio_in_cls{}'.format(cls)
                     valid_sample_name = 'valid_sample_in_cls{}'.format(cls)
-                    result[cls_acc] = o_tpr[i]
+                    result[cls_acc] = o_tpr[cls]
                     valid_sample_num = np.sum(total_valid_sample == cls)
                     total_gen_num = np.sum(total_sample.flatten() == cls)
                     result[valid_sample_name] = valid_sample_num
