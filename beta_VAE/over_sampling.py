@@ -92,6 +92,8 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 for i in range(len(classifier_list)):
                     label_on_train = classifier_list[i].call(x).numpy().argmax(-1)
                     metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
+                    total_x_sample = x
+                    total_label = y
                     for cls in range(model.num_cls):
                         # oversampling
                         sample_label = np.array(([cls] * features.shape[0]))
@@ -103,17 +105,17 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         s_index = estimate(classifier_list[i], x_logit, threshold, sample_label, target)
                         o_sample_y = sample_label[s_index]
                         #total_sample_idx = merge_list(s_index[0], m_index[0])
-                        total_x_sample = tf.concat((x, x_logit.numpy()[m_index]), axis=0)
-                        total_label = tf.concat((y, sample_label[m_index]), axis=0)
+                        total_x_sample = tf.concat((total_x_sample, x_logit.numpy()[m_index]), axis=0)
+                        total_label = tf.concat((total_label, sample_label[m_index]), axis=0)
                         metrix_list[i]['valid_sample'].append([len(sample_y),
                                                        len(o_sample_y)])
                         metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
                         metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
-                        with tf.GradientTape() as o_tape:
-                            _, _, o_loss = compute_loss(model, classifier_list[i], total_x_sample,
+                    with tf.GradientTape() as o_tape:
+                        _, _, o_loss = compute_loss(model, classifier_list[i], total_x_sample,
                                                         total_label, method=method)
-                        o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
-                        optimizer_list[i].apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
+                    o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
+                    optimizer_list[i].apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
                 return metrix_list
             else:
                 for cls in range(model.num_cls):
