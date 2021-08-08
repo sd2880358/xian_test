@@ -96,7 +96,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         sample_y = sample_label[m_index]
                         s_index = estimate(classifier_list[i], x_logit, threshold, sample_label, target)
                         o_sample_y = sample_label[s_index]
-                        total_sample_idx = merge_list(s_index[0], m_index[0])
+                        #total_sample_idx = merge_list(s_index[0], m_index[0])
                         total_x_sample = tf.concat((x, x_logit.numpy()[m_index]), axis=0)
                         total_label = tf.concat((y, sample_label[m_index]), axis=0)
                         metrix_list[i]['valid_sample'].append([len(sample_y),
@@ -152,14 +152,11 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
             print('*' * 20)
             end_time = time.time()
             print("Epoch: {}, time elapse for current epoch: {}".format(epoch + 1, end_time - start_time))
+            ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
+            pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
             for i in range(len(threshold_list)):
-                ori_loss, h, _ = compute_loss(model, classifier, test_set[0], test_set[1])
-                pre_acsa, pre_g_mean, pre_tpr, pre_confMat, pre_acc = indices(h.numpy().argmax(-1), test_set[1])
                 _, o_h, _ = compute_loss(model, classifier_list[i], test_set[0], test_set[1])
                 oAsca, oGMean, pre_tpr, pre_confMat, pre_acc = indices(o_h.numpy().argmax(-1), test_set[1])
-                total_loss = ori_loss
-
-
                 elbo = -ori_loss
                 pre_train_g_mean_acc = pre_g_mean
                 pre_train_acsa_acc = pre_acsa
