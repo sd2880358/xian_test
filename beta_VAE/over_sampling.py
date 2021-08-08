@@ -44,7 +44,7 @@ def latent_triversal(model, classifier, x, y, r, n):
 
 def start_train(epochs, target, threshold_list, method, model, classifier, dataset,
                 train_set, test_set, date, filePath):
-    optimizer = tf.keras.optimizers.Adam(1e-4)
+    optimizer_list = []
     checkpoints_list = []
     classifier_list= []
     result_dir_list = []
@@ -59,6 +59,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
         latent = (tf.data.Dataset.from_tensor_slices(latent)
                     .shuffle(latent, seed=1).batch(batch_size))
     for i in threshold_list:
+        optimizer_list.append(tf.keras.optimizers.Adam(1e-4))
         metrix = {}
         metrix['valid_sample'] = []
         metrix['total_sample'] = []
@@ -107,7 +108,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                             _, _, o_loss = compute_loss(model, classifier_list[i], total_x_sample,
                                                         total_label, method=method)
                         o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
-                        optimizer.apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
+                        optimizer_list.apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
                 return metrix_list
             else:
                 for cls in range(model.num_cls):
@@ -127,10 +128,10 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                         metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
                         metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
                         with tf.GradientTape() as o_tape:
-                            _, _, o_loss = compute_loss(model, o_classifier, total_x_sample, total_label,
+                            _, _, o_loss = compute_loss(model, classifier_list[i], total_x_sample, total_label,
                                                         method=method)
-                        o_gradients = o_tape.gradient(o_loss, o_classifier.trainable_variables)
-                        optimizer.apply_gradients(zip(o_gradients, o_classifier.trainable_variables))
+                        o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
+                        optimizer_list.apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
     e = 0
 
     for epoch in range(epochs):
