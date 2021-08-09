@@ -131,7 +131,7 @@ def exhaustion_initialized():
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
     checkpoint.restore("./checkpoints/exhaustion_cls2/ckpt-1")
-    threshold = [0.98, 0.98, 0.98, 0.5, 0.8, 0.5, 0.7, 0.98, 0.98, 0.7]
+    threshold = [0.99, 0.99, 0.98, 0.55, 0.85, 0.55, 0.75, 0.98, 0.98, 0.75]
     tmp_data_list = []
     tmp_label_list = []
     num = 0

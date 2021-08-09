@@ -74,7 +74,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
     result_dir_list = []
     if (model.data == 'mnist'):
         file = np.load('../dataset/mnist_oversample_latent.npz')
-        latent = file['latent']
+        latent = file['latent'].squeeze(2)
         latent_len = latent.shape[0]
         mnist_train_len = np.load('../dataset/mnist_dataset.npz')['train_images'].shape[0]
         block = np.ceil(mnist_train_len/32)
@@ -167,7 +167,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
             metrix_list.append(metrix)
 
         start_time = time.time()
-        if (model.data == 'celebA' or "large_celebA"):
+        if (model.data == 'celebA' or model.data == "large_celebA"):
             for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
                 metrix_list = train_step(model, classifier, classifier_list,
                 x, y, oversample=True, metrix_list=metrix_list)
