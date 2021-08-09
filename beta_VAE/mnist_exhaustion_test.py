@@ -143,6 +143,7 @@ def exhaustion_initialized():
         e_idx = s_idx + split_size
         test_data = dataset[s_idx : e_idx]
         conf, l = confidence_function(classifier, test_data)
+        s_idx += split_size
         for i in range(len(threshold)):
             tmp_data = test_data[np.where((conf.numpy()>=threshold[i]) & (l==i))]
             tmp_label = np.array([i]*len(tmp_data))
