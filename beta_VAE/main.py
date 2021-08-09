@@ -22,7 +22,7 @@ if __name__ == '__main__':
     classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
     checkpoint = tf.train.Checkpoint(sim_clr=model, clssifier=classifier)
-    checkpoint.restore("./checkpoints/8_5/pre_train_large_celebA_lsq/ckpt-40")
+    checkpoint.restore("./checkpoints/8_5/pre_train_mnist_lsq/ckpt-40")
 
     start_train(epochs, target, threshold_list, method, model, classifier, dataset,
                 [train_set, train_labels],
