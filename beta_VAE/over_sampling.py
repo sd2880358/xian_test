@@ -296,3 +296,4 @@ if __name__ == '__main__':
 
 
 
+cls = ['blonde','black','bald','brown','gray']
