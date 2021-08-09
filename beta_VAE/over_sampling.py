@@ -81,7 +81,7 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
         batch_size = int(np.ceil(latent_len/block))
         latent = (tf.data.Dataset.from_tensor_slices(latent)
                     .shuffle(len(latent), seed=1).batch(batch_size))
-    for i in threshold_list:
+    for i in range(len(threshold_list)):
         optimizer_list.append(tf.keras.optimizers.Adam(1e-4))
         result_dir = "./score/{}/{}/{}".format(date, filePath, i)
         result_dir_list.append(result_dir)
@@ -114,9 +114,9 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                     z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
                     x_logit = model.sample(z)
                     threshold = classifier_list[i].threshold
-                    m_index = estimate(classifier, x_logit, threshold, sample_label, target)
+                    m_index = estimate(classifier, x_logit, threshold[cls], sample_label, target)
                     sample_y = sample_label[m_index]
-                    s_index = estimate(classifier_list[i], x_logit, threshold, sample_label, target)
+                    s_index = estimate(classifier_list[i], x_logit, threshold[cls], sample_label, target)
                     o_sample_y = sample_label[s_index]
                     #total_sample_idx = merge_list(s_index[0], m_index[0])
                     total_x_sample = tf.concat((total_x_sample, x_logit.numpy()[m_index]), axis=0)

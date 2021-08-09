@@ -10,7 +10,8 @@ if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
     target = 'margin'
-    threshold_list = [0.85, 0.86, 0.87, 0.88, 0.89, 0.9]
+    threshold= np.array([0.997, 0.992, 0.985, 0.985, 0.977, 0.966, 0.966, 0.951, 0.893, 0.864])
+    threshold_list = [(threshold - 0.01 * i) for i in range(10)]
     date = '8_8'
     for i in range(1, 11):
         data_name = 'mnist'
