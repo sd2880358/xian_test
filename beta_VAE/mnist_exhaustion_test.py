@@ -166,6 +166,7 @@ def exhaustion_initialized():
 
 
 if __name__ == '__main__':
+    '''
     optimizer = tf.keras.optimizers.Adam(1e-4)
     (train_set, train_labels), (test_set, test_labels) = tf.keras.datasets.mnist.load_data()
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
@@ -186,3 +187,5 @@ if __name__ == '__main__':
     start_train(epochs, c_epochs, sim_clr, classifier, method,
                 [train_set, train_labels],
                 [test_set, test_labels], date, file_path)
+    '''
+    exhaustion_initialized()
