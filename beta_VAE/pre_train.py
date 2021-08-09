@@ -136,11 +136,11 @@ if __name__ == '__main__':
     target = 'margin'
     threshold = 0.95
     date = '8_5'
-    data_name = 'celebA'
-    file_path = 'pre_train_celebA_lsq'
+    data_name = 'mnist'
+    file_path = 'pre_train_mnist_lsq'
     dataset = Dataset(data_name)
     epochs = 200
-    c_epochs = 0
+    c_epochs = 30
     method = 'lsq'
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     sim_clr = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
