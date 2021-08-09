@@ -12,8 +12,8 @@ if __name__ == '__main__':
     target = 'margin'
     threshold_list = [0.95, 0.96, 0.97, 0.98, 0.99, 1]
     date = '8_7'
-    data_name = 'large_celebA'
-    file_path = 'large_celebA_test2'
+    data_name = 'mnist'
+    file_path = 'mnist_test1'
     dataset = Dataset(data_name)
     epochs = 30
     method = 'lsq'
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
     checkpoint = tf.train.Checkpoint(sim_clr=model, clssifier=classifier)
-    checkpoint.restore("./checkpoints/8_5/pre_train_large_celebA_lsq/ckpt-44")
+    checkpoint.restore("./checkpoints/8_5/pre_train_large_celebA_lsq/ckpt-40")
 
     start_train(epochs, target, threshold_list, method, model, classifier, dataset,
                 [train_set, train_labels],
