@@ -86,7 +86,8 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
         result_dir = "./score/{}/{}/{}".format(date, filePath, i)
         result_dir_list.append(result_dir)
         checkpoint_path = "./checkpoints/{}/{}/{}".format(date, filePath, i)
-        o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls, threshold=i)
+        o_classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls,
+                                  threshold=threshold_list[i])
         ckpt = tf.train.Checkpoint(sim_clr=model,
                                    clssifier=classifier,
                                    o_classifier=o_classifier,
