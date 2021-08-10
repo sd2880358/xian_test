@@ -184,10 +184,11 @@ def model_initialize():
                 [train_set, train_labels],
                 [test_set, test_labels], date, file_path)
 
-def get_result(model):
+def get_result(model, classifier):
     features_dims = 3
-    l = np.linspace(-5, 5, 13)
+    l = np.linspace(-5, 5, 4)
     batch_size = 1000
+    threshold = [0.95, 0.96, 0.99, 0.99, 0.97, 0.99, 0.98, 0.975, 0.95, 0.85]
     feature_list = create_list(features_dims, [i for i in range(3)], l)
     feature_list = (tf.data.Dataset.from_tensor_slices(feature_list.reshape(len(feature_list), 3))
                     .shuffle(len(feature_list), seed=1).batch(batch_size))
@@ -200,32 +201,51 @@ def get_result(model):
             sample = sample + tf.split(x, x.shape[0], axis=0)
     sample = np.array(sample).reshape(len(sample), 9 * 9)
     unique_list = np.unique(sample, axis=0)
+    '''
     file = np.load('../dataset/mnist_exhaustion_test_data.npz')
     g_data = file['mnist_data']
     g_data = g_data.reshape(len(g_data), 9 * 9)
     g_label = file['mnist_labels']
     valid_sample = []
     valid_label = []
+    '''
+    unique_list = (tf.data.Dataset.from_tensor_slices(unique_list.reshape(len(unique_list), 9, 9, 1))
+                    .shuffle(len(feature_list), seed=1).batch(batch_size))
+    tmp_data_list = []
+    tmp_label_list = []
+    num = 0
     for unique in unique_list:
-        tmp = g_data[np.where(g_data == unique)]
-        if (tmp.shape[0]!= 0):
-            valid_sample.append(tmp)
-            valid_label.append(g_label[np.where(g_data==unique)])
-    valid_ratio = []
-    for i in range(10):
-        valid_size = np.sum(valid_label[valid_label==g_label]==i)
-        valid_ratio.append(valid_size/np.sum(g_label==i))
-    np.savez('../valid_mnist_in_exhaustion_test', sample=np.array(valid_sample), label=np.array(valid_label))
-    print(valid_ratio)
+        conf, l = confidence_function(classifier, unique)
+        for i in range(len(threshold)):
+            tmp_data = unique[np.where((conf.numpy() >= threshold[i]) & (l == i))]
+            tmp_label = np.array([i] * len(tmp_data))
+            tmp_data_list.append(tmp_data)
+            tmp_label_list.append(tmp_label)
+            num += len(tmp_data)
+    print(num)
+    print('data has been classified!')
+    valid_data = np.zeros([num, 9, 9, 1])
+    valid_label = np.zeros([num, ])
+    idx = 0
+    for i in range(len(tmp_data_list)):
+        l = tmp_data_list[i].shape[0]
+        valid_data[idx: idx + l, :, :, :] = tmp_data_list[i]
+        valid_label[idx: idx + l] = tmp_label_list[i]
+        idx += l
+    np.savez("../dataset/mnist_betaVAE_exhaustion_data.npz", mnist_data=valid_data.astype('float32'),
+             mnist_labels=valid_label.astype('int32'))
+    print(np.bincount(np.array(valid_label.astype('int32'))))
 
 
 if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
-    exhaustion_initialized()
-    '''
+    #exhaustion_initialized()
+
     sim_clr = F_VAE(data='mnist', shape=[9, 9, 1], latent_dim=4, model='mlp', num_cls=10)
+    classifier = Classifier(shape=[9, 9, 1], num_cls=10)
+    checkpoint = tf.train.Checkpoint(classifier=classifier)
+    checkpoint.restore("./checkpoints/exhaustion_cls2/ckpt-1")
     checkpoint = tf.train.Checkpoint(sim_clr=sim_clr)
     checkpoint.restore("./checkpoints/beta_VAE_exhaustion_test/ckpt-17")
-    get_result(sim_clr)
-    '''
+    get_result(sim_clr, classifier)
