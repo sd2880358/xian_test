@@ -8,9 +8,6 @@ import os
 import time
 import pandas as pd
 # create a m dimensions list, every s dimension can choose value between l;
-def create_list(m, s, l):
-    initial_list = np.zeros(m)
-    return (flip_number(initial_list, 0, s, l))
 
 def start_train(epochs, c_epochs, model, classifier, method,
                 train_set, test_set, date, filePath):
@@ -96,27 +93,30 @@ def start_train(epochs, c_epochs, model, classifier, method,
 
 # given a m dimension list, current index, and next index, flip value between l,
 # return if next index==total length, recursive otherwise;
-def flip_number(m, c_i, s, l):
+def create_list(m, idx, s, l):
+    initial_list = np.zeros(m)
+    return (flip_number(initial_list, idx, l))
+
+def flip_number(m, idx, l):
     tmp_list = []
-    n_i = c_i + s
+    c_i = idx[0]
     for i in range(len(l)):
         tmp = m.copy()
         tmp[c_i] = l[i]
         tmp_list.append(tmp)
-
-    if (n_i > (len(m) - 1)):
+    if (len(idx[1:]) < 1):
         return tmp_list
     else:
         total_list = []
         for tmp in tmp_list:
-            total_list.append(flip_number(tmp, n_i, s, l))
+            total_list.append(flip_number(tmp, idx[1:], l))
         total_list = np.array(total_list)
         w = total_list.shape[0]
         h = total_list.shape[1]
         return total_list.reshape(w * h, total_list.shape[2])
 
-def initial_dataset(m, s, l, save=False):
-    mnist_data = create_list(m, s, l)
+def initial_dataset(m, idx, l, save=False):
+    mnist_data = create_list(m, idx, l)
     if (save==True):
         np.savez('../dataset/mnist_exhausted_test_initialize',
                 mnist_data=mnist_data.reshape([mnist_data.shape[0], 9, 9]))
@@ -125,7 +125,8 @@ def initial_dataset(m, s, l, save=False):
 def exhaustion_initialized():
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
-    dataset = initial_dataset(81, 3, [0,1])
+    idx = np.random.choice([i for i in range(80)], 27)
+    dataset = initial_dataset(81, idx, [0,1])
     print("dataset has been initial")
     print("the dataset shape is {}".format(dataset.shape))
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
