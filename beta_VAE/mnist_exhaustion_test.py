@@ -132,7 +132,7 @@ def exhaustion_initialized():
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
     checkpoint.restore("./checkpoints/exhaustion_cls2/ckpt-1")
-    threshold = [0.98] * 10
+    threshold = [0.95, 0.99, 0.99, 0.99, 0.97, 0.99, 0.98, 0.98, 0.96, 0.95]
     tmp_data_list = []
     tmp_label_list = []
     num = 0
@@ -164,29 +164,25 @@ def exhaustion_initialized():
     np.savez("../dataset/mnist_exhaustion_test_data.npz", mnist_data=valid_data.astype('float32'),
              mnist_labels=valid_label.astype('int32'))
 
-
-
-if __name__ == '__main__':
-    '''
-    optimizer = tf.keras.optimizers.Adam(1e-4)
+def model_initialize():
     (train_set, train_labels), (test_set, test_labels) = tf.keras.datasets.mnist.load_data()
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     train_set = preprocess_images(train_set, shape=[28, 28, 1])
     test_set = preprocess_images(test_set, shape=[28, 28, 1])
-    date = '8_7'
-    dims = [9, 9]
     epochs = 200
     c_epochs = 30
     method = 'lsq'
     file_path = 'beta_VAE_exhaustion_test'
-    train_set = np.round(tf.image.resize(train_set, [9, 9]), 0)
-    test_set = np.round(tf.image.resize(test_set, [9, 9]), 0)
+    train_set = tf.image.resize(train_set, [9, 9])
+    test_set = tf.image.resize(test_set, [9, 9])
     sim_clr = F_VAE(data='mnist', shape=[9,9,1], latent_dim=4, model='mlp', num_cls=10)
-    optimizer = tf.keras.optimizers.Adam(1e-4)
     date = '8_7'
-    dims = [9, 9]
     start_train(epochs, c_epochs, sim_clr, classifier, method,
                 [train_set, train_labels],
                 [test_set, test_labels], date, file_path)
-    '''
+
+
+
+if __name__ == '__main__':
+
     exhaustion_initialized()
