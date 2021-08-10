@@ -125,7 +125,7 @@ def initial_dataset(m, idx, l, save=False):
 def exhaustion_initialized():
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
-    idx = np.random.choice([i for i in range(80)], 27)
+    idx = np.random.choice([i for i in range(81)], 27)
     dataset = initial_dataset(81, idx, [0,1])
     print("dataset has been initial")
     print("the dataset shape is {}".format(dataset.shape))
