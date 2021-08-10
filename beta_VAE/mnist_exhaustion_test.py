@@ -1,6 +1,6 @@
 import numpy as np
-from model2 import Classifier
-from model import CVAE, F_VAE
+from model2 import Classifier, F_VAE
+
 import tensorflow as tf
 from loss import confidence_function, compute_loss, indices
 from dataset import preprocess_images
@@ -90,7 +90,6 @@ def start_train(epochs, c_epochs, model, classifier, method,
 
 
 
-
 # given a m dimension list, current index, and next index, flip value between l,
 # return if next index==total length, recursive otherwise;
 def create_list(m, idx, l):
@@ -123,8 +122,7 @@ def initial_dataset(m, idx, l, save=False):
     return mnist_data.reshape([mnist_data.shape[0], 9, 9, 1])
 
 def exhaustion_initialized():
-    os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
+
     idx = np.random.randint(low=0, high=81, size=27)
     dataset = initial_dataset(81, idx, [0,1])
     print("dataset has been initial")
@@ -175,14 +173,55 @@ def model_initialize():
     file_path = 'beta_VAE_exhaustion_test'
     train_set = tf.image.resize(train_set, [9, 9])
     test_set = tf.image.resize(test_set, [9, 9])
+    train_set = (tf.data.Dataset.from_tensor_slices(train_set)
+                 .shuffle(len(train_set), seed=1).batch(32))
+    train_labels = (tf.data.Dataset.from_tensor_slices(train_labels)
+                    .shuffle(len(train_labels), seed=1).batch(32))
     sim_clr = F_VAE(data='mnist', shape=[9,9,1], latent_dim=4, model='mlp', num_cls=10)
     date = '8_7'
     start_train(epochs, c_epochs, sim_clr, classifier, method,
                 [train_set, train_labels],
                 [test_set, test_labels], date, file_path)
 
+def get_result(model):
+    features_dims = 3
+    l = np.linspace(-5, 5, 13)
+    batch_size = 1000
+    feature_list = create_list(features_dims, [i for i in range(3)], l)
+    feature_list = (tf.data.Dataset.from_tensor_slices(feature_list.reshape(len(feature_list), 3))
+                    .shuffle(len(feature_list), seed=1).batch(batch_size))
+    sample = []
+    for feature in feature_list:
+        for cls in range(10):
+            cls_label = [cls] * feature.shape[0]
+            z = tf.concat([feature, np.expand_dims(cls_label, 1)], axis=1)
+            x = tf.round(model.sample(z), 0)
+            sample = sample + tf.split(x, x.shape[0], axis=0)
+    sample = np.array(sample).reshape(len(sample), 9 * 9)
+    unique_list = np.unique(sample, axis=0)
+    file = np.load('../dataset/mnist_exhaustion_test_data.npz')
+    g_data = file['mnist_data']
+    g_data = g_data.reshape(len(g_data), 9 * 9)
+    g_label = file['mnist_labels']
+    valid_sample = []
+    valid_label = []
+    for unique in unique_list:
+        tmp = g_data[np.where(g_data == unique)]
+        if (tmp.shape[0]!= 0):
+            valid_sample.append(tmp)
+            valid_label.append(g_label[np.where(g_data==unique)])
+    valid_ratio = []
+    for i in range(10):
+        valid_size = np.sum(valid_label[valid_label==g_label]==i)
+        valid_ratio.append(valid_size/np.sum(g_label==i))
+    np.savez('../valid_mnist_in_exhaustion_test', sample=np.array(valid_sample), label=np.array(valid_label))
+    print(valid_ratio)
 
 
 if __name__ == '__main__':
-
-    exhaustion_initialized()
+    os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
+    sim_clr = F_VAE(data='mnist', shape=[9, 9, 1], latent_dim=4, model='mlp', num_cls=10)
+    checkpoint = tf.train.Checkpoint(sim_clr=sim_clr)
+    checkpoint.restore("./checkpoints/8_7/beta_VAE_exhaustion_test/ckpt-17")
+    get_result(sim_clr)
