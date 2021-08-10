@@ -93,7 +93,7 @@ def start_train(epochs, c_epochs, model, classifier, method,
 
 # given a m dimension list, current index, and next index, flip value between l,
 # return if next index==total length, recursive otherwise;
-def create_list(m, idx, s, l):
+def create_list(m, idx, l):
     initial_list = np.zeros(m)
     return (flip_number(initial_list, idx, l))
 
