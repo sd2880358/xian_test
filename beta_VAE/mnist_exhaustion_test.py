@@ -130,7 +130,7 @@ def exhaustion_initialized():
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
     checkpoint.restore("./checkpoints/exhaustion_cls2/ckpt-1")
-    threshold = [0.95, 0.98, 0.99, 0.99, 0.97, 0.99, 0.98, 0.97, 0.97, 0.9]
+    threshold = [0.95, 0.96, 0.99, 0.99, 0.97, 0.99, 0.98, 0.97, 0.975, 0.85]
     tmp_data_list = []
     tmp_label_list = []
     num = 0
@@ -161,7 +161,7 @@ def exhaustion_initialized():
         idx += l
     np.savez("../dataset/mnist_exhaustion_test_data.npz", mnist_data=valid_data.astype('float32'),
              mnist_labels=valid_label.astype('int32'))
-    print(np.bincount(valid_label))
+    print(np.bincount(np.array(valid_label.astype('int32'))))
 
 def model_initialize():
     (train_set, train_labels), (test_set, test_labels) = tf.keras.datasets.mnist.load_data()
