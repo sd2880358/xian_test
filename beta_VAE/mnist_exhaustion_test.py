@@ -161,6 +161,7 @@ def exhaustion_initialized():
         idx += l
     np.savez("../dataset/mnist_exhaustion_test_data.npz", mnist_data=valid_data.astype('float32'),
              mnist_labels=valid_label.astype('int32'))
+    print(np.bincount(valid_label))
 
 def model_initialize():
     (train_set, train_labels), (test_set, test_labels) = tf.keras.datasets.mnist.load_data()
@@ -221,7 +222,10 @@ def get_result(model):
 if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
+    exhaustion_initialized()
+    '''
     sim_clr = F_VAE(data='mnist', shape=[9, 9, 1], latent_dim=4, model='mlp', num_cls=10)
     checkpoint = tf.train.Checkpoint(sim_clr=sim_clr)
-    checkpoint.restore("./checkpoints/8_7/beta_VAE_exhaustion_test/ckpt-17")
+    checkpoint.restore("./checkpoints/beta_VAE_exhaustion_test/ckpt-17")
     get_result(sim_clr)
+    '''
