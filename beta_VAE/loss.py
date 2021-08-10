@@ -99,7 +99,7 @@ def compute_loss(model, classifier, x, y, method='cross_entropy', loss='cross_en
     beta_loss = reco_loss + kl_loss * beta
     '''
     kl_loss = tf.reduce_mean(kl_divergence(mean, logvar))
-    h = classifier.projection(x)
+    h = classifier.call(x)
     classifier_loss = top_loss(classifier, h, y, method)
     if (loss=='cross_entropy'):
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
