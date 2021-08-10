@@ -135,9 +135,9 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
     target = 'margin'
     threshold = 0.95
-    date = '8_5'
-    data_name = 'mnist'
-    file_path = 'pre_train_mnist_lsq'
+    date = '8_9'
+    data_name = 'large_celebA'
+    file_path = 'pre_train_celebA_lsq'
     dataset = Dataset(data_name)
     epochs = 200
     c_epochs = 30

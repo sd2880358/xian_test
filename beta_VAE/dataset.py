@@ -67,7 +67,7 @@ class Dataset():
 
     elif (dataset == 'celebA' or dataset == 'large_celebA'):
       self.shape = (64, 64, 3)
-      self.num_cls = 5
+      self.num_cls = 512
       self.latent_dims = 128
       self.irs = [15000, 1500, 750, 300, 150]
 
