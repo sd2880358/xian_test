@@ -22,13 +22,11 @@ def estimate(classifier, x_logit, threshold, label, n):
 
 def high_performance(classifier, cls, x, oversample, y, oversample_label, method):
     optimizer = tf.keras.optimizers.Adam(1e-4)
-    '''
     with tf.GradientTape() as m_one_tape:
         _, m_one_loss = classifier_loss(classifier, x,
                                     y, method=method)
     m_one_gradients = m_one_tape.gradient(m_one_loss, classifier.trainable_variables)
     optimizer.apply_gradients(zip(m_one_gradients, classifier.trainable_variables))
-    '''
     m_one_pre = classifier.call(x)
     m_one_acc = np.sum(m_one_pre.numpy().argmax(-1) == y)
     if (oversample.shape[0] > 0):
@@ -128,8 +126,10 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                                                    len(o_sample_y)])
                     metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
                     metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
+                    '''
                     classifier_list[i] = high_performance(classifier_list[i], cls, x,
                                                           m_sample, y, sample_y, method=method)
+                    '''
             return metrix_list
 
     for epoch in range(epochs):
