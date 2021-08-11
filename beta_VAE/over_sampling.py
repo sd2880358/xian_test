@@ -33,9 +33,10 @@ def high_performance(classifier, cls, x, oversample, y, oversample_label, method
     optimizer.apply_gradients(zip(m_two_gradients, classifier.trainable_variables))
     m_two_pre = classifier.call(x)
     m_two_acc = np.sum(m_two_pre.numpy().argmax(-1) == y)
-    _, sigma = super_loss(classifier, oversample, oversample_label, out_put=2, on_train=False)
-    margin = 0.01*(m_two_acc-m_one_acc) * tf.abs(classifier.threshold[cls] - np.mean(sigma))
-    classifier.threshold[cls] = classifier.threshold[cls] - margin
+    if (oversample.shape[0] > 0):
+        _, sigma = super_loss(classifier, oversample, oversample_label, out_put=2, on_train=False)
+        margin = 0.001*(m_two_acc-m_one_acc) * tf.abs(classifier.threshold[cls] - np.mean(sigma))
+        classifier.threshold[cls] = classifier.threshold[cls] - margin
     return classifier
 
 
