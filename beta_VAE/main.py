@@ -11,11 +11,11 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
     target = 'margin'
     threshold= np.array([1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744])
-    threshold_list = [(threshold - 0.01 * i) for i in range(5)]
-    date = '8_8'
+    threshold_list = [threshold]
+    date = '8_10'
     for i in range(1, 11):
         data_name = 'mnist'
-        file_path = 'mnist_test{}'.format(i)
+        file_path = 'mnist_super_loss{}'.format(i)
         dataset = Dataset(data_name)
         epochs = 30
         method = 'lsq'
