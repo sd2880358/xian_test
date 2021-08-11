@@ -9,7 +9,7 @@ import numpy as np
 if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
-    target = 5
+    n = 5
     threshold= [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
     threshold_list = [threshold]
     date = '8_11'
