@@ -221,7 +221,7 @@ class Classifier(tf.keras.Model):
         return self.tau
 
     def _accumulate_threshold(self, cls, value):
-        self.threshold[cls].assign(self.threshold - value)
+        self.threshold[cls].assign(self.threshold[cls] - value)
 
 
 
