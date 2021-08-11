@@ -22,13 +22,11 @@ def estimate(classifier, x_logit, threshold, label, n):
 
 def high_performance(classifier, cls, x, oversample, y, oversample_label, method):
     optimizer = tf.keras.optimizers.Adam(1e-4)
-    '''
     with tf.GradientTape() as m_one_tape:
         _, m_one_loss = classifier_loss(classifier, x,
                                     y, method=method)
     m_one_gradients = m_one_tape.gradient(m_one_loss, classifier.trainable_variables)
     optimizer.apply_gradients(zip(m_one_gradients, classifier.trainable_variables))
-    '''
     m_one_pre = classifier.call(x)
     m_one_acc = np.sum(m_one_pre.numpy().argmax(-1) == y)
     '''
