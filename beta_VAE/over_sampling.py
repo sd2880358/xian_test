@@ -14,10 +14,10 @@ from loss import classifier_loss, confidence_function, top_loss, acc_metrix, ind
 from tensorflow.keras.models import clone_model
 
 
-def estimate(classifier, x_logit, threshold, n, label):
+def estimate(classifier, x_logit, threshold, label, n):
     _, sigma = super_loss(classifier, x_logit, label, out_put=2, on_train=False)
-    valid = x_logit(np.where(sigma >= threshold))
-    top_n = [x for _, x in sorted(zip(sigma, x_logit), reverse=True, key=lambda pair: pair[0])][:n]
+    valid = x_logit(tf.where(sigma >= threshold))
+    top_n = [x for _, x in sorted(zip(sigma, valid), reverse=True, key=lambda pair: pair[0])][:n]
     return tf.Variable(top_n)
 
 def high_performance(classifier, cls, x, oversample, y, oversample_label, method):
