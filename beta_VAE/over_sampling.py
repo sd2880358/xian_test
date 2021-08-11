@@ -111,7 +111,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                 metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
                 for cls in range(1, model.num_cls):
                     # oversampling
-                    sample_label = tf.Variable(([cls] * features.shape[0]))
+                    sample_label = np.array(([cls] * features.shape[0]))
                     z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
                     x_logit = model.sample(z)
                     threshold = classifier_list[i].threshold
