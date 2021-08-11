@@ -10,7 +10,7 @@ if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
     target = 'margin'
-    threshold= np.array([0.997, 0.992, 0.985, 0.985, 0.977, 0.966, 0.966, 0.951, 0.893, 0.864])
+    threshold= np.array([1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744])
     threshold_list = [(threshold - 0.01 * i) for i in range(5)]
     date = '8_8'
     for i in range(1, 11):
@@ -24,7 +24,7 @@ if __name__ == '__main__':
         classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
         checkpoint = tf.train.Checkpoint(sim_clr=model, clssifier=classifier)
-        checkpoint.restore("./checkpoints/8_5/pre_train_mnist_lsq/ckpt-40")
+        checkpoint.restore("./checkpoints/8_10/pre_train_mnist_super_loss/ckpt-40")
 
         start_train(epochs, target, threshold_list, method, model, classifier, dataset,
                     [train_set, train_labels],

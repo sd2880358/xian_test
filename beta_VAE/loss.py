@@ -170,17 +170,21 @@ def top_loss(model, h, y, method):
 
     return loss_t
 
-def super_loss(classifier, x, y, method='average', out_put=1):
+def super_loss(classifier, x, y, method='average', out_put=1, on_train=True):
     h = classifier.call(x)
-    base_loss = top_loss(classifier, h, y, method='cross_entropy')
-    tau = classifier._accumulate_tau(base_loss)
+    classes = classifier.num_cls
+    labels = tf.one_hot(y, classes)
+    base_loss = tf.nn.softmax_cross_entropy_with_logits(
+        labels=labels, logits=h
+        )
+    tau = classifier._accumulate_tau(base_loss, on_train=on_train)
     beta = (base_loss - tau) / classifier.lam
     ln_sigma = - tfp.math.lambertw(0.5 * tf.maximum(classifier.cap, beta))
     total_loss = (base_loss - tau) * tf.exp(ln_sigma) + classifier.lam * pow(ln_sigma, 2)
     if (method == 'average'):
         total_loss = tf.reduce_mean(total_loss)
     if (out_put == 2):
-        return total_loss, ln_sigma
+        return total_loss, tf.exp(ln_sigma)
     return total_loss
 
 

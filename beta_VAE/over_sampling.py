@@ -10,35 +10,33 @@ import os
 from IPython import display
 import math
 import pandas as pd
-from loss import classifier_loss, confidence_function, top_loss, acc_metrix, indices
+from loss import classifier_loss, confidence_function, top_loss, acc_metrix, indices, super_loss
 from tensorflow.keras.models import clone_model
 
 
-def estimate(classifier, x_logit, threshold, label, target):
-    conf, l = confidence_function(classifier, x_logit, target=target)
-    return np.where((conf.numpy()>=threshold) & (l==label))
+def estimate(classifier, x_logit, threshold, label):
+    _, sigma = super_loss(classifier, x_logit, label, out_put=2, on_train=False)
+    return np.where((sigma.numpy()>=threshold))
 
-def high_performance(classifier, i, x, oversample, y, oversample_label, method):
+def high_performance(classifier, cls, x, oversample, y, oversample_label, method):
     optimizer = tf.keras.optimizers.Adam(1e-4)
-    model_one = clone_model(classifier)
-    model_two = clone_model(classifier)
-    with tf.GradientTape() as m_one_tape, tf.GradientTape() as m_two_tape:
-        _, m_one_loss = classifier_loss(model_one, x,
+    with tf.GradientTape() as m_one_tape:
+        _, m_one_loss = classifier_loss(classifier, x,
                                     y, method=method)
-        _, m_two_loss = classifier_loss(model_two, oversample, oversample_label, method=method)
-    m_one_gradients = m_one_tape.gradient(m_one_loss, model_one.trainable_variables)
-    optimizer.apply_gradients(zip(m_one_gradients, model_one.trainable_variables))
-    m_two_gradients = m_two_tape.gradient(m_two_loss, model_two.trainable_variables)
-    optimizer.apply_gradients(zip(m_two_gradients, model_two.trainable_variables))
-    m_one_pre = model_one.call(x)
+    m_one_gradients = m_one_tape.gradient(m_one_loss, classifier.trainable_variables)
+    optimizer.apply_gradients(zip(m_one_gradients, classifier.trainable_variables))
+    m_one_pre = classifier.call(x)
     m_one_acc = np.sum(m_one_pre.numpy().argmax(-1) == y)
-    m_two_pre = model_two.call(x)
+    with tf.GradientTape() as m_two_tape:
+        _, m_two_loss = classifier_loss(classifier, oversample, oversample_label, method=method)
+    m_two_gradients = m_two_tape.gradient(m_two_loss, classifier.trainable_variables)
+    optimizer.apply_gradients(zip(m_two_gradients, classifier.trainable_variables))
+    m_two_pre = classifier.call(x)
     m_two_acc = np.sum(m_two_pre.numpy().argmax(-1) == y)
-
-    if (m_one_acc > m_two_acc):
-        return model_one
-    else:
-        return  model_two
+    _, sigma = super_loss(classifier, oversample, oversample_label, out_put=2, on_train=False)
+    margin = 0.01*(m_two_acc-m_one_acc) * tf.abs(classifier.threshold[cls] - np.mean(sigma))
+    classifier.threshold[cls] = classifier.threshold[cls] - margin
+    return classifier
 
 
 def merge_list(l1, l2):
@@ -107,55 +105,28 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 # get the accuracy during training
                 label_on_train = classifier_list[i].call(x).numpy().argmax(-1)
                 metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
-                total_x_sample = x
-                total_label = y
                 for cls in range(1, model.num_cls):
                     # oversampling
                     sample_label = np.array(([cls] * features.shape[0]))
                     z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
                     x_logit = model.sample(z)
                     threshold = classifier_list[i].threshold
-                    m_index = estimate(classifier, x_logit, threshold[cls], sample_label, target)
+                    m_index = estimate(classifier, x_logit,
+                                       threshold[cls], sample_label)
                     sample_y = sample_label[m_index]
-                    s_index = estimate(classifier_list[i], x_logit, threshold[cls], sample_label, target)
+                    s_index = estimate(classifier_list[i], x_logit,
+                                       threshold[cls], sample_label)
                     o_sample_y = sample_label[s_index]
                     #total_sample_idx = merge_list(s_index[0], m_index[0])
-                    total_x_sample = tf.concat((total_x_sample, x_logit.numpy()[m_index]), axis=0)
-                    total_label = tf.concat((total_label, sample_label[m_index]), axis=0)
+                    total_x_sample = x_logit.numpy()[m_index]
+                    total_label = sample_label[m_index]
                     metrix_list[i]['valid_sample'].append([len(sample_y),
                                                    len(o_sample_y)])
                     metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
                     metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
-                with tf.GradientTape() as o_tape:
-                    _, o_loss = classifier_loss(classifier_list[i], total_x_sample,
-                                                total_label, method=method)
-                o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
-                optimizer_list[i].apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
+                    classifier_list[i] = high_performance(classifier_list[i], cls, x,
+                                                          total_x_sample, y, total_label, method=method)
             return metrix_list
-            '''
-            else:
-                for cls in range(model.num_cls):
-                    sample_label = np.array(([cls] * features.shape[0]))
-                    z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
-                    x_logit = model.sample(z)
-                    for i in range(len(classifier_list)):
-                        m_index = estimate(classifier, x_logit, model.threshold, sample_label, target)
-                        sample_y = sample_label.numpy()[m_index]
-                        s_index = estimate(o_classifier, x_logit, model.threshold, sample_label, target)
-                        o_sample_y = sample_label.numpy()[s_index]
-                        total_sample_idx = merge_list(s_index[0], m_index[0])
-                        total_x_sample = x_logit.numpy()[total_sample_idx]
-                        total_label = sample_label.numpy()[total_sample_idx]
-                        metrix_list[i]['valid_sample'].append([len(sample_y),
-                                                               len(o_sample_y)])
-                        metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
-                        metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
-                        with tf.GradientTape() as o_tape:
-                            _, _, o_loss = compute_loss(model, classifier_list[i], total_x_sample, total_label,
-                                                        method=method)
-                        o_gradients = o_tape.gradient(o_loss, classifier_list[i].trainable_variables)
-                        optimizer_list.apply_gradients(zip(o_gradients, classifier_list[i].trainable_variables))
-            '''
 
     for epoch in range(epochs):
         metrix_list = []

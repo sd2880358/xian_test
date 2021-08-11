@@ -212,10 +212,12 @@ class Classifier(tf.keras.Model):
     def call(self, X):
         return self.model(X)
 
-    def _accumulate_tau(self, loss):
-        if self.tau_method == 'exp':
+    def _accumulate_tau(self, loss, on_train=True):
+        if self.tau_method == 'exp' and (on_train):
             self.tau.assign(self.tau -  0.1 * (self.tau - tf.reduce_mean(loss)))
         return self.tau
+
+
 
 
     def mnist_score(self, X, n_split=10, eps=1E-16):
