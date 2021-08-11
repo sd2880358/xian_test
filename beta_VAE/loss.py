@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.linalg import matvec
 from sklearn.metrics import confusion_matrix
+import tensorflow_probability as tfp
 
 def rota_cross_loss(model, x, d, r_x):
     c, s = np.cos(d), np.sin(d)
@@ -100,7 +101,10 @@ def compute_loss(model, classifier, x, y, method='cross_entropy', loss='cross_en
     '''
     kl_loss = tf.reduce_mean(kl_divergence(mean, logvar))
     h = classifier.call(x)
-    classifier_loss = top_loss(classifier, h, y, method)
+    if (method == 'super_loss'):
+        classifier_loss = super_loss(classifier, x, y)
+    else:
+        classifier_loss = top_loss(classifier, h, y, method)
     if (loss=='cross_entropy'):
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
         logx_z = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1, 2, 3]))
@@ -165,6 +169,19 @@ def top_loss(model, h, y, method):
         loss_t = tf.reduce_mean(tf.losses.mean_squared_error(y_true=labels, y_pred=y_pred))
 
     return loss_t
+
+def super_loss(classifier, x, y, method='average', out_put=1):
+    h = classifier.call(x)
+    base_loss = top_loss(classifier, h, y, method='cross_entropy')
+    tau = classifier._accumulate_tau(base_loss)
+    beta = (base_loss - tau) / classifier.lam
+    ln_sigma = - tfp.math.lambertw(0.5 * tf.maximum(classifier.cap, beta))
+    total_loss = (base_loss - tau) * tf.exp(ln_sigma) + classifier.lam * pow(ln_sigma, 2)
+    if (method == 'average'):
+        total_loss = tf.reduce_mean(total_loss)
+    if (out_put == 2):
+        return total_loss, ln_sigma
+    return total_loss
 
 
 def negative_entropy(data, normalize=False, max_value=None):

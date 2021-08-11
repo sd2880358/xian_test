@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from math import floor
+from math import floor, e
 class CVAE(tf.keras.Model):
   """Convolutional variational autoencoder."""
 
@@ -159,11 +159,19 @@ class CVAE(tf.keras.Model):
 
 
 class Classifier(tf.keras.Model):
-    def __init__(self, shape, num_cls=10, model='cnn', threshold=None):
+    def __init__(self, shape, num_cls=10, model='cnn',  regularization = 1.0, threshold=None, tau_method='exp'):
         super(Classifier, self).__init__()
         self.shape = shape
         self.num_cls = num_cls
+        self.lam = regularization
+        self.cap = -1.9999998 / e
         self.threshold = threshold
+        self.tau_method = tau_method
+        if self.tau_method == 'exp':
+            self.tau = tf.Variable(0.0, trainable=False)
+        else:
+            self.tau = self.tau_method
+        self.cap = tf.constant(self.cap)
         if (model == 'cnn'):
             self.model = tf.keras.Sequential(
                 [
@@ -203,6 +211,11 @@ class Classifier(tf.keras.Model):
 
     def call(self, X):
         return self.model(X)
+
+    def _accumulate_tau(self, loss):
+        if self.tau_method == 'exp':
+            self.tau.assign(self.tau -  0.1 * (self.tau - tf.reduce_mean(loss)))
+        return self.tau
 
 
     def mnist_score(self, X, n_split=10, eps=1E-16):

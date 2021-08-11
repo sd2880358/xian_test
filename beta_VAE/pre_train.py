@@ -135,13 +135,13 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
     target = 'margin'
     threshold = 0.95
-    date = '8_9'
-    data_name = 'large_celebA'
-    file_path = 'pre_train_celebA_lsq'
+    date = '8_10'
+    data_name = 'mnist'
+    file_path = 'pre_train_mnist_super_loss'
     dataset = Dataset(data_name)
     epochs = 200
     c_epochs = 30
-    method = 'lsq'
+    method = 'super_loss'
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     sim_clr = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
     classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
