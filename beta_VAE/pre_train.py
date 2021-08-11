@@ -136,8 +136,8 @@ if __name__ == '__main__':
     target = 'margin'
     threshold = 0.95
     date = '8_10'
-    data_name = 'mnist'
-    file_path = 'pre_train_mnist_super_loss'
+    data_name = 'large_celebA'
+    file_path = 'pre_train_large_celebA_super_loss'
     dataset = Dataset(data_name)
     epochs = 200
     c_epochs = 30
