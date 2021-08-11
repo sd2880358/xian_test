@@ -166,9 +166,9 @@ class Classifier(tf.keras.Model):
         self.lam = regularization
         self.cap = -1.9999998 / e
         if (threshold == None):
-            self.threshold = tf.Variable([0 for i in range (num_cls)])
+            self.threshold = tf.Variable([0 for i in range (num_cls)], trainable=False)
         else:
-            self.threshold = tf.Variable(threshold)
+            self.threshold = tf.Variable(threshold, trainable=False)
         self.tau_method = tau_method
         if self.tau_method == 'exp':
             self.tau = tf.Variable(0.0, trainable=False)
