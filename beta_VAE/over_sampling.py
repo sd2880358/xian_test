@@ -14,9 +14,11 @@ from loss import classifier_loss, confidence_function, top_loss, acc_metrix, ind
 from tensorflow.keras.models import clone_model
 
 
-def estimate(classifier, x_logit, threshold, label):
+def estimate(classifier, x_logit, threshold, n, label):
     _, sigma = super_loss(classifier, x_logit, label, out_put=2, on_train=False)
-    return np.where((sigma.numpy()>=threshold))
+    valid = x_logit(np.where(sigma >= threshold))
+    top_n = [x for _, x in sorted(zip(sigma, x_logit), reverse=True, key=lambda pair: pair[0])][:n]
+    return tf.Variable(top_n)
 
 def high_performance(classifier, cls, x, oversample, y, oversample_label, method):
     optimizer = tf.keras.optimizers.Adam(1e-4)
@@ -36,8 +38,8 @@ def high_performance(classifier, cls, x, oversample, y, oversample_label, method
         m_two_acc = np.sum(m_two_pre.numpy().argmax(-1) == y)
 
         _, sigma = super_loss(classifier, oversample, oversample_label, out_put=2, on_train=False)
-        margin = 0.001*(m_two_acc-m_one_acc) * tf.abs(classifier.threshold[cls] - np.mean(sigma))
-        classifier.threshold[cls] = classifier.threshold[cls] - margin
+        margin = 0.01*(m_two_acc-m_one_acc) * tf.abs(classifier.threshold[cls] - np.mean(sigma))
+        classifier._accumulate_thresholod(cls, margin)
     return classifier
 
 
@@ -66,7 +68,7 @@ def latent_triversal(model, classifier, x, y, r, n):
                 acc(len(sample)/len(y))
     return acc.result()
 
-def start_train(epochs, target, threshold_list, method, model, classifier, dataset,
+def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                 train_set, test_set, date, filePath):
     optimizer_list = []
     checkpoints_list = []
@@ -109,25 +111,23 @@ def start_train(epochs, target, threshold_list, method, model, classifier, datas
                 metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
                 for cls in range(1, model.num_cls):
                     # oversampling
-                    sample_label = np.array(([cls] * features.shape[0]))
+                    sample_label = tf.Variable(([cls] * features.shape[0]))
                     z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
                     x_logit = model.sample(z)
                     threshold = classifier_list[i].threshold
-                    m_index = estimate(classifier, x_logit,
-                                       threshold[cls], sample_label)
-                    sample_y = sample_label[m_index]
-                    s_index = estimate(classifier_list[i], x_logit,
-                                       threshold[cls], sample_label)
-                    o_sample_y = sample_label[s_index]
+                    m_sample = estimate(classifier, x_logit,
+                                       threshold[cls], sample_label, n=n)
+                    sample_y = sample_label[:m_sample.shape[0]]
+                    s_sample = estimate(classifier_list[i], x_logit,
+                                       threshold[cls], sample_label, n=n)
+                    o_sample_y = sample_label[:s_sample.shape[0]]
                     #total_sample_idx = merge_list(s_index[0], m_index[0])
-                    total_x_sample = x_logit.numpy()[m_index]
-                    total_label = sample_label[m_index]
                     metrix_list[i]['valid_sample'].append([len(sample_y),
                                                    len(o_sample_y)])
                     metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
                     metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
                     classifier_list[i] = high_performance(classifier_list[i], cls, x,
-                                                          total_x_sample, y, total_label, method=method)
+                                                          m_sample, y, sample_y, method=method)
             return metrix_list
 
     for epoch in range(epochs):

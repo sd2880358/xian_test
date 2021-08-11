@@ -165,7 +165,10 @@ class Classifier(tf.keras.Model):
         self.num_cls = num_cls
         self.lam = regularization
         self.cap = -1.9999998 / e
-        self.threshold = threshold
+        if (threshold == None):
+            self.threshold = tf.Variable([0 for i in range (num_cls)])
+        else:
+            self.threshold = tf.Variable(threshold)
         self.tau_method = tau_method
         if self.tau_method == 'exp':
             self.tau = tf.Variable(0.0, trainable=False)
@@ -217,6 +220,8 @@ class Classifier(tf.keras.Model):
             self.tau.assign(self.tau -  0.1 * (self.tau - tf.reduce_mean(loss)))
         return self.tau
 
+    def _accumulate_threshold(self, cls, value):
+        self.threshold[cls].assign(self.threshold - value)
 
 
 
