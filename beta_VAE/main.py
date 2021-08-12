@@ -25,11 +25,12 @@ if __name__ == '__main__':
     threshold = [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
     threshold_list = [threshold]
     date = '8_11'
-    for i in range(1, 11):
+    epochs = 30
+    for i in range(2, 11):
         data_name = 'mnist'
         file_path = 'mnist_super_loss{}'.format(i)
         dataset = Dataset(data_name)
-        epochs = 30
+
         method = 'lsq'
         (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
         model = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)

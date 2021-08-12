@@ -10,7 +10,7 @@ import os
 from IPython import display
 import math
 import pandas as pd
-from loss import classifier_loss, confidence_function, top_loss, acc_metrix, indices, super_loss
+from loss import classifier_loss, confidence_function, top_loss, acc_metrix, indices, super_loss, compute_loss
 from tensorflow.keras.models import clone_model
 
 
@@ -20,21 +20,26 @@ def estimate(classifier, x_logit, threshold, label, n):
     top_n = [x for _, x in sorted(zip(sigma, valid), reverse=True, key=lambda pair: pair[0])][:n]
     return tf.Variable(top_n)
 
-def high_performance(classifier, cls, x, oversample, y, oversample_label, method):
-    optimizer = tf.keras.optimizers.Adam(1e-4)
-    with tf.GradientTape() as m_one_tape:
-        _, m_one_loss = classifier_loss(classifier, x,
+def high_performance(model, classifier, cls, x, oversample, y, oversample_label, method):
+    o_optimizer = tf.keras.optimizers.Adam(1e-4)
+    sim_optimizer = tf.keras.optimizers.Adam(1e-4)
+    with tf.GradientTape() as m_one_tape, tf.GradientTape() as sim_tape:
+        gen_loss, _, m_one_loss = compute_loss(model, classifier, x,
                                     y, method=method)
-    
+    sim_gradients = sim_tape.gradient(gen_loss, model.trainable_variables)
+    sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
     m_one_gradients = m_one_tape.gradient(m_one_loss, classifier.trainable_variables)
-    optimizer.apply_gradients(zip(m_one_gradients, classifier.trainable_variables))
+    o_optimizer.apply_gradients(zip(m_one_gradients, classifier.trainable_variables))
     m_one_pre = classifier.call(x)
     m_one_acc = np.sum(m_one_pre.numpy().argmax(-1) == y)
     if (oversample.shape[0] > 0):
-        with tf.GradientTape() as m_two_tape:
-            _, m_two_loss = classifier_loss(classifier, oversample, oversample_label, method=method)
+        with tf.GradientTape() as m_two_tape, tf.GradientTape() as sim_tape:
+            gen_loss, _, m_two_loss = compute_loss(model, classifier, oversample,
+                                                   oversample_label, method=method)
+        sim_gradients = sim_tape.gradient(gen_loss, model.trainable_variables)
+        sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
         m_two_gradients = m_two_tape.gradient(m_two_loss, classifier.trainable_variables)
-        optimizer.apply_gradients(zip(m_two_gradients, classifier.trainable_variables))
+        o_optimizer.apply_gradients(zip(m_two_gradients, classifier.trainable_variables))
         m_two_pre = classifier.call(x)
         m_two_acc = np.sum(m_two_pre.numpy().argmax(-1) == y)
 
@@ -127,7 +132,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                                                    len(o_sample_y)])
                     metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
                     metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
-                    classifier_list[i] = high_performance(classifier_list[i], cls, x,
+                    classifier_list[i] = high_performance(model, classifier_list[i], cls, x,
                                                           m_sample, y, sample_y, method=method)
             return metrix_list
 
@@ -203,7 +208,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                     else:
                         result[name] = valid_sample_num / total_gen_num
                 if os.path.isfile(result_dir + '/result.csv'):
-                    e = pd.read_csv(result_dir + '/result.csv').index[-1] + epoch + 1
+                    e = pd.read_csv(result_dir + '/result.csv').index[-1] + 1
                 else:
                     e = epoch + 1
                 df = pd.DataFrame(result, index=[e], dtype=np.float32)
