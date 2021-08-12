@@ -26,8 +26,10 @@ def high_performance(model, classifier, cls, x, oversample, y, oversample_label,
     with tf.GradientTape() as m_one_tape, tf.GradientTape() as sim_tape:
         gen_loss, _, m_one_loss = compute_loss(model, classifier, x,
                                     y, method=method)
+    '''
     sim_gradients = sim_tape.gradient(gen_loss, model.trainable_variables)
     sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
+    '''
     m_one_gradients = m_one_tape.gradient(m_one_loss, classifier.trainable_variables)
     o_optimizer.apply_gradients(zip(m_one_gradients, classifier.trainable_variables))
     m_one_pre = classifier.call(x)
@@ -36,8 +38,10 @@ def high_performance(model, classifier, cls, x, oversample, y, oversample_label,
         with tf.GradientTape() as m_two_tape, tf.GradientTape() as sim_tape:
             gen_loss, _, m_two_loss = compute_loss(model, classifier, oversample,
                                                    oversample_label, method=method)
+        '''
         sim_gradients = sim_tape.gradient(gen_loss, model.trainable_variables)
         sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
+        '''
         m_two_gradients = m_two_tape.gradient(m_two_loss, classifier.trainable_variables)
         o_optimizer.apply_gradients(zip(m_two_gradients, classifier.trainable_variables))
         m_two_pre = classifier.call(x)

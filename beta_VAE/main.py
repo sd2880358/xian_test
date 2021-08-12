@@ -26,9 +26,9 @@ if __name__ == '__main__':
     threshold_list = [threshold]
     date = '8_11'
     epochs = 30
-    for i in range(2, 11):
-        data_name = 'mnist'
-        file_path = 'mnist_super_loss{}'.format(i)
+    for i in range(1, 11):
+        data_name = 'large_celebA'
+        file_path = 'celebA_super_loss{}'.format(i)
         dataset = Dataset(data_name)
 
         method = 'lsq'
@@ -37,7 +37,7 @@ if __name__ == '__main__':
         classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
         checkpoint = tf.train.Checkpoint(sim_clr=model, clssifier=classifier)
-        checkpoint.restore("./checkpoints/8_10/pre_train_mnist_super_loss/ckpt-40")
+        checkpoint.restore("./checkpoints/8_10/pre_train_large_celebA_super_loss/ckpt-40")
 
         start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                     [train_set, train_labels],
