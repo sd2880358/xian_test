@@ -152,7 +152,7 @@ if __name__ == '__main__':
     date = '8_10'
     data_name = 'large_celebA'
     file_path = 'pre_train_large_celebA_super_loss'
-    dataset = Dataset(data_name)
+    dataset = Dataset(data_name, batch_size=16)
     epochs = 200
     c_epochs = 30
     method = 'super_loss'
