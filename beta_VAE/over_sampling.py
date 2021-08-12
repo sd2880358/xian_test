@@ -113,6 +113,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
     def train_step(model, classifier, classifier_list, x,  y, oversample=False, metrix_list=None, features=None):
         if (oversample):
             if(features == None):
+                print(x.shape)
                 mean, logvar = model.encode(x)
                 features = model.reparameterize(mean, logvar)
             for i in range(len(classifier_list)):
