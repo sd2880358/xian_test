@@ -32,7 +32,7 @@ if __name__ == '__main__':
     for i in range(1, 11):
         data_name = 'large_celebA'
         file_path = 'celebA_super_loss{}'.format(i)
-        dataset = Dataset(data_name)
+        dataset = Dataset(data_name, batch_size=16)
 
         method = 'lsq'
         (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
