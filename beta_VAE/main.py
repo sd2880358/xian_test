@@ -9,6 +9,7 @@ import numpy as np
 if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
+    '''
     gpus = tf.config.list_physical_devices('GPU')
     if gpus:
         # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
@@ -21,6 +22,7 @@ if __name__ == '__main__':
         except RuntimeError as e:
             # Virtual devices must be set before GPUs have been initialized
             print(e)
+    '''
     n = 5
     #threshold = [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
     threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
