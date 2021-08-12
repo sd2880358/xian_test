@@ -198,11 +198,14 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                     'pass_pre_train_classifier': pass_pre_train_classifier,
                     'pass_o_classifier': pass_o_classifier
                 }
+                current_threshold = classifier_list[i].threshold.numpy()
                 for cls in range(model.num_cls):
                     cls_acc = 'acc_in_cls{}'.format(cls)
                     name = 'valid_ratio_in_cls{}'.format(cls)
                     valid_sample_name = 'valid_sample_in_cls{}'.format(cls)
                     result[cls_acc] = o_tpr[cls]
+                    threshold_id = 'threshold_in_cls{}'.format(cls)
+                    result[threshold_id] = current_threshold[cls]
                     valid_sample_num = np.sum(total_valid_sample == cls)
                     total_gen_num = np.sum(total_sample.flatten() == cls)
                     result[valid_sample_name] = valid_sample_num

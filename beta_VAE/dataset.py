@@ -68,7 +68,7 @@ class Dataset():
     elif (dataset == 'celebA' or dataset == 'large_celebA'):
       self.shape = (64, 64, 3)
       self.num_cls = 5
-      self.latent_dims = 512
+      self.latent_dims = 256
       self.irs = [15000, 1500, 750, 300, 150]
 
   def load_data(self, normalize=True):
