@@ -22,7 +22,8 @@ if __name__ == '__main__':
             # Virtual devices must be set before GPUs have been initialized
             print(e)
     n = 5
-    threshold = [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
+    #threshold = [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
+    threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
     threshold_list = [threshold]
     date = '8_11'
     epochs = 30
