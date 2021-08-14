@@ -33,7 +33,6 @@ if __name__ == '__main__':
         data_name = 'large_celebA'
         file_path = 'celebA_super_loss{}'.format(i)
         dataset = Dataset(data_name, batch_size=16)
-
         method = 'lsq'
         (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
         model = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)

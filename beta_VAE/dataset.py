@@ -4,6 +4,7 @@ import pandas as pd
 from tensorflow.keras import datasets
 import tensorflow as tf
 from load_data import split
+from mnist_exhaustion_test import create_list
 def preprocess_images(images, shape):
   images = images.reshape((images.shape[0], shape[0], shape[1], shape[2])) / 255.
   return np.where(images > .5, 1.0, 0.0).astype('float32')
@@ -55,7 +56,8 @@ class Dataset():
     self.switcher = {
       'mnist': np.load('../dataset/mnist_dataset.npz'),
       'celebA': np.load('../dataset/celebA_dataset.npz'),
-      'large_celebA': np.load('../dataset/celebA_large_dataset.npz')
+      'large_celebA': np.load('../dataset/celebA_large_dataset.npz'),
+      'fashion_mnist': np.load('../dataset/fashion_mnist.npz')
     }
 
     if (dataset == 'mnist'):
@@ -64,6 +66,11 @@ class Dataset():
       self.latent_dims = 8
       self.irs = [4000, 2000, 1000, 750, 500, 350, 200, 100, 60, 40]
 
+    elif (dataset == 'fashionMNIST'):
+      self.shape = (28, 28, 1)
+      self.num_cls = 10
+      self.latent_dims = 16
+      self.irs = [4000, 2000, 1000, 750, 500, 350, 200, 100, 60, 40]
 
     elif (dataset == 'celebA' or dataset == 'large_celebA'):
       self.shape = (64, 64, 3)
@@ -85,16 +92,22 @@ class Dataset():
     return (train_images, train_labels), (test_images, test_labels)
 
 if __name__ == '__main__':
-  (train_set, train_labels), (test_set, test_labels) = split('../CelebA')
-  shape = (64, 64, 3)
-  num_cls = 5
-  latent_dims = 64
-  irs = [28000, 4000, 3000, 1500, 750]
+  '''
+  (train_set, train_labels), (test_set, test_labels) = tf.keras.datasets.fashion_mnist.load_data()
+  train_set = preprocess_images(train_set, [28, 28, 1])
+  test_set = preprocess_images(test_set, [28, 28, 1])
+  shape = (28, 28, 1)
+  num_cls = 10
+  latent_dims = 16
+  irs = [4000, 2000, 1000, 750, 500, 350, 200, 100, 60, 40]
   train_images, train_labels = imbalance_sample(train_set, train_labels, irs)
   test_irs = [100] * len(irs)
   test_images, test_labels = imbalance_sample(test_set, test_labels, test_irs)
-  np.savez('../dataset/celebA_large_dataset', train_images=train_images, train_labels=train_labels,
+  np.savez('../dataset/fashion_mnist', train_images=train_images, train_labels=train_labels,
           test_images=test_images, test_labels=test_labels)
+  '''
 
-
+  fashion_mnist_features = create_list(15, idx=[i for i in range (15)], l=np.linspace(-5, 5, 5))
+  np.savez('../dataset/fashion_mnist_features',
+           fashion_mnist_features=fashion_mnist_features.reshape([fashion_mnist_features.shape[0], 15]))
 
