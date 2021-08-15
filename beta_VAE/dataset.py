@@ -4,7 +4,7 @@ import pandas as pd
 from tensorflow.keras import datasets
 import tensorflow as tf
 from load_data import split
-from mnist_exhaustion_test import create_list
+
 def preprocess_images(images, shape):
   images = images.reshape((images.shape[0], shape[0], shape[1], shape[2])) / 255.
   return np.where(images > .5, 1.0, 0.0).astype('float32')

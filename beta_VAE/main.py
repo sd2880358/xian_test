@@ -12,7 +12,6 @@ if __name__ == '__main__':
 
     gpus = tf.config.list_physical_devices('GPU')
     if gpus:
-        # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
         try:
             tf.config.set_logical_device_configuration(
                 gpus[0],
@@ -23,16 +22,16 @@ if __name__ == '__main__':
             # Virtual devices must be set before GPUs have been initialized
             print(e)
 
-    n = 5
-    #threshold = [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
-    threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
+    n = 10
+    threshold = [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
+    #threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
     threshold_list = [threshold]
-    date = '8_11'
+    date = '8_15'
     epochs = 30
     for i in range(1, 11):
         data_name = 'large_celebA'
         file_path = 'celebA_super_loss{}'.format(i)
-        dataset = Dataset(data_name, batch_size=16)
+        dataset = Dataset(data_name, batch_size=32)
         method = 'lsq'
         (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
         model = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)

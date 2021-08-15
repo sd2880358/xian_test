@@ -3,7 +3,7 @@ from model2 import Classifier, F_VAE
 
 import tensorflow as tf
 from loss import confidence_function, compute_loss, indices
-from dataset import preprocess_images
+
 import os
 import time
 import pandas as pd
@@ -236,12 +236,16 @@ def get_result(model, classifier):
              mnist_labels=valid_label.astype('int32'))
     print(np.bincount(np.array(valid_label.astype('int32'))))
 
+def preprocess_images(images, shape):
+  images = images.reshape((images.shape[0], shape[0], shape[1], shape[2])) / 255.
+  return np.where(images > .5, 1.0, 0.0).astype('float32')
+
 
 if __name__ == '__main__':
     os.environ["CUDA_DECICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,4,5,7"
     #exhaustion_initialized()
-
+    '''
     sim_clr = F_VAE(data='mnist', shape=[9, 9, 1], latent_dim=4, model='mlp', num_cls=10)
     classifier = Classifier(shape=[9, 9, 1], num_cls=10)
     checkpoint = tf.train.Checkpoint(classifier=classifier)
@@ -249,3 +253,8 @@ if __name__ == '__main__':
     checkpoint = tf.train.Checkpoint(sim_clr=sim_clr)
     checkpoint.restore("./checkpoints/beta_VAE_exhaustion_test/ckpt-17")
     get_result(sim_clr, classifier)
+    '''
+
+    fashion_mnist_features = create_list(15, idx=[i for i in range(15)], l=np.linspace(-5, 5, 5))
+    np.savez('../dataset/fashion_mnist_features',
+             fashion_mnist_features=fashion_mnist_features.reshape([fashion_mnist_features.shape[0], 15]))

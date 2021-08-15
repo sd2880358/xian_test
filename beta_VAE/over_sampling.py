@@ -93,6 +93,15 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
         batch_size = int(np.ceil(latent_len/block))
         latent = (tf.data.Dataset.from_tensor_slices(latent)
                     .shuffle(len(latent), seed=1).batch(batch_size))
+    elif(model.data == 'fashion_mnist'):
+        file = np.load('../dataset/fashion_mnist_features')
+        latent = file['fashion_mnist_features']
+        latent_len = latent.shape[0]
+        fashion_mnist_len = np.load('../dataset/fashion_mnist_dataset.npz')['train_images'].shape[0]
+        block = np.ceil(fashion_mnist_len)
+        batch_size = int(np.ceil(latent_len/block))
+        latent = (tf.data.Dataset.from_tensor_slices(latent)
+                  .shuffle(len(latent), seed=1).batch(batch_size))
     for i in range(len(threshold_list)):
         optimizer_list.append(tf.keras.optimizers.Adam(1e-4))
         result_dir = "./score/{}/{}/{}".format(date, filePath, i)
