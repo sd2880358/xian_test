@@ -29,8 +29,8 @@ if __name__ == '__main__':
     date = '8_15'
     epochs = 30
     for i in range(1, 11):
-        data_name = 'large_celebA'
-        file_path = 'celebA_super_loss{}'.format(i)
+        data_name = 'mnist'
+        file_path = 'mnist_super_loss{}'.format(i)
         dataset = Dataset(data_name, batch_size=32)
         method = 'lsq'
         (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
