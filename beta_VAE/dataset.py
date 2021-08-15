@@ -57,7 +57,7 @@ class Dataset():
       'mnist': np.load('../dataset/mnist_dataset.npz'),
       'celebA': np.load('../dataset/celebA_dataset.npz'),
       'large_celebA': np.load('../dataset/celebA_large_dataset.npz'),
-      'fashion_mnist': np.load('../dataset/fashion_mnist.npz')
+      #'fashion_mnist': np.load('../dataset/fashion_mnist.npz')
     }
 
     if (dataset == 'mnist'):
