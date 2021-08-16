@@ -26,7 +26,7 @@ if __name__ == '__main__':
     threshold = [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
     #threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
     threshold_list = [threshold]
-    date = '8_15'
+    date = '8_16'
     epochs = 30
     for i in range(1, 11):
         data_name = 'mnist'

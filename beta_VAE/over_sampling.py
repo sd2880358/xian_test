@@ -84,6 +84,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
     checkpoints_list = []
     classifier_list= []
     result_dir_list = []
+    '''
     if (model.data == 'mnist'):
         file = np.load('../dataset/mnist_oversample_latent.npz')
         latent = file['latent'].squeeze(2)
@@ -102,6 +103,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
         batch_size = int(np.ceil(latent_len/block))
         latent = (tf.data.Dataset.from_tensor_slices(latent)
                   .shuffle(len(latent), seed=1).batch(batch_size))
+    '''
     for i in range(len(threshold_list)):
         optimizer_list.append(tf.keras.optimizers.Adam(1e-4))
         result_dir = "./score/{}/{}/{}".format(date, filePath, i)
@@ -128,24 +130,29 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                 # get the accuracy during training
                 label_on_train = classifier_list[i].call(x).numpy().argmax(-1)
                 metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
+                test = np.linspace(-5, 5, 11)
                 for cls in range(1, model.num_cls):
                     # oversampling
-                    sample_label = np.array(([cls] * features.shape[0]))
-                    z = tf.concat([features, np.expand_dims(sample_label, 1)], axis=1)
-                    x_logit = model.sample(z)
-                    threshold = classifier_list[i].threshold
-                    m_sample = estimate(classifier, x_logit,
-                                       threshold[cls], sample_label, n=n)
-                    sample_y = sample_label[:m_sample.shape[0]]
-                    s_sample = estimate(classifier_list[i], x_logit,
-                                       threshold[cls], sample_label, n=n)
-                    o_sample_y = sample_label[:s_sample.shape[0]]
-                    #total_sample_idx = merge_list(s_index[0], m_index[0])
-                    metrix_list[i]['valid_sample'].append([len(sample_y),
-                                                   len(o_sample_y)])
-                    metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
-                    metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
-                    classifier_list[i] = high_performance(model, classifier_list[i], cls, x,
+                    for j in test:
+                        for features_idx in range(len(features)):
+                            re_features = features.numpy().copy()
+                            re_features[:, features_idx] = j
+                            sample_label = np.array(([cls] * features.shape[0]))
+                            z = tf.concat([re_features, np.expand_dims(sample_label, 1)], axis=1)
+                            x_logit = model.sample(z)
+                            threshold = classifier_list[i].threshold
+                            m_sample = estimate(classifier, x_logit,
+                                               threshold[cls], sample_label, n=n)
+                            sample_y = sample_label[:m_sample.shape[0]]
+                            s_sample = estimate(classifier_list[i], x_logit,
+                                               threshold[cls], sample_label, n=n)
+                            o_sample_y = sample_label[:s_sample.shape[0]]
+                            #total_sample_idx = merge_list(s_index[0], m_index[0])
+                            metrix_list[i]['valid_sample'].append([len(sample_y),
+                                                           len(o_sample_y)])
+                            metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
+                            metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
+                            classifier_list[i] = high_performance(model, classifier_list[i], cls, x,
                                                           m_sample, y, sample_y, method=method)
             return metrix_list
 
@@ -160,17 +167,18 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
             metrix_list.append(metrix)
 
         start_time = time.time()
-        if (model.data == 'celebA' or model.data == "large_celebA"):
-            for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-                metrix_list = train_step(model, classifier, classifier_list,
-                x, y, oversample=True, metrix_list=metrix_list)
+        #if (model.data == 'celebA' or model.data == "large_celebA"):
+        for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
+            metrix_list = train_step(model, classifier, classifier_list,
+            x, y, oversample=True, metrix_list=metrix_list)
 
+        '''
         elif (model.data == 'mnist'):
             for x,z,y in tf.data.Dataset.zip((train_set[0], latent, train_set[1])):
                 metrix_list = train_step(model, classifier, classifier_list,
                 x, y, features=z, oversample=True, metrix_list=metrix_list)
 
-
+        '''
             #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch +1)%1 == 0:
 
