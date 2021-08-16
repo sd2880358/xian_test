@@ -134,7 +134,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                 for cls in range(1, model.num_cls):
                     # oversampling
                     for j in test:
-                        for features_idx in range(len(features)):
+                        for features_idx in range(len(features.shape[1])):
                             re_features = features.numpy().copy()
                             re_features[:, features_idx] = j
                             sample_label = np.array(([cls] * features.shape[0]))
