@@ -131,14 +131,18 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                 label_on_train = classifier_list[i].call(x).numpy().argmax(-1)
                 metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
                 test = np.linspace(-5, 5, 11)
+                features_set = np.zeros([11, features._shape[1] * features._shape[0], 7])
+                for features_idx in range(features._shape[1]):
+                    for j in range(len(test)):
+                        tmp = features.numpy().copy()
+                        tmp[:, features_idx] = test[j]
+                        features_set[j, features_idx*features._shape[0]:(features_idx+1)*features._shape[0], :] = tmp
+                features_set = tf.Variable(
+                    features_set.reshape(features._shape[0]*features._shape[1]*11, 7))
                 for cls in range(1, model.num_cls):
                     # oversampling
-                    for j in test:
-                        for features_idx in range(features.shape[1]):
-                            re_features = features.numpy().copy()
-                            re_features[:, features_idx] = j
-                            sample_label = np.array(([cls] * features.shape[0]))
-                            z = tf.concat([re_features, np.expand_dims(sample_label, 1)], axis=1)
+                            sample_label = np.array(([cls] * features_set.shape[0]))
+                            z = tf.concat([features_set, np.expand_dims(sample_label, 1)], axis=1)
                             x_logit = model.sample(z)
                             threshold = classifier_list[i].threshold
                             m_sample = estimate(classifier, x_logit,

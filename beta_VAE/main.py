@@ -23,6 +23,7 @@ if __name__ == '__main__':
             print(e)
 
     n = 10
+    batch_size = 64
     threshold = [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
     #threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
     threshold_list = [threshold]
@@ -31,7 +32,7 @@ if __name__ == '__main__':
     for i in range(1, 11):
         data_name = 'mnist'
         file_path = 'mnist_super_loss{}'.format(i)
-        dataset = Dataset(data_name, batch_size=32)
+        dataset = Dataset(data_name, batch_size=batch_size)
         method = 'lsq'
         (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
         model = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
