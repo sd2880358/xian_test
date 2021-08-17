@@ -54,7 +54,7 @@ class Dataset():
     self.batch_size = batch_size
     self.dataset = dataset
     self.switcher = {
-      'mnist': np.load('../dataset/mnist_dataset.npz'),
+      'mnist': np.load('../dataset/mnist_dataset2.npz'),
       'celebA': np.load('../dataset/celebA_dataset.npz'),
       'large_celebA': np.load('../dataset/celebA_large_dataset.npz'),
       #'fashion_mnist': np.load('../dataset/fashion_mnist.npz')
@@ -92,8 +92,7 @@ class Dataset():
     return (train_images, train_labels), (test_images, test_labels)
 
 if __name__ == '__main__':
-  '''
-  (train_set, train_labels), (test_set, test_labels) = tf.keras.datasets.fashion_mnist.load_data()
+  (train_set, train_labels), (test_set, test_labels) = tf.keras.datasets.mnist.load_data()
   train_set = preprocess_images(train_set, [28, 28, 1])
   test_set = preprocess_images(test_set, [28, 28, 1])
   shape = (28, 28, 1)
@@ -103,11 +102,8 @@ if __name__ == '__main__':
   train_images, train_labels = imbalance_sample(train_set, train_labels, irs)
   test_irs = [100] * len(irs)
   test_images, test_labels = imbalance_sample(test_set, test_labels, test_irs)
-  np.savez('../dataset/fashion_mnist', train_images=train_images, train_labels=train_labels,
+  np.savez('../dataset/mnist_dataset2', train_images=train_images, train_labels=train_labels,
           test_images=test_images, test_labels=test_labels)
-  '''
 
-  fashion_mnist_features = create_list(15, idx=[i for i in range (15)], l=np.linspace(-5, 5, 5))
-  np.savez('../dataset/fashion_mnist_features',
-           fashion_mnist_features=fashion_mnist_features.reshape([fashion_mnist_features.shape[0], 15]))
+
 
