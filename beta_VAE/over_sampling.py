@@ -149,10 +149,10 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                             x_logit = model.sample(z)
                             threshold = classifier_list[i].threshold
                             m_sample = estimate(classifier, x_logit,
-                                               threshold[cls], sample_label, n=n, method='test')
+                                               threshold[cls], sample_label, n=n)
                             sample_y = sample_label[:m_sample.shape[0]]
                             s_sample = estimate(classifier_list[i], x_logit,
-                                               threshold[cls], sample_label, n=n, method='test')
+                                               threshold[cls], sample_label, n=n)
                             o_sample_y = sample_label[:s_sample.shape[0]]
                             #total_sample_idx = merge_list(s_index[0], m_index[0])
                             metrix_list[i]['valid_sample'].append([len(sample_y),
