@@ -20,7 +20,7 @@ def estimate(classifier, x_logit, threshold, label, n, method='top'):
     if (method == 'top'):
         top_n = [x for _, x in sorted(zip(sigma, valid), reverse=True, key=lambda pair: pair[0])][:n]
     else:
-        return tf.Variable(np.random.choice(valid, n))
+        return tf.Variable(tf.random.shuffle(valid)[:n])
     return tf.Variable(top_n)
 
 def high_performance(model, classifier, cls, x, oversample, y, oversample_label, method):
