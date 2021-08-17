@@ -11,7 +11,7 @@ from IPython import display
 import math
 import pandas as pd
 from loss import classifier_loss, confidence_function, top_loss, acc_metrix, indices, super_loss, compute_loss
-from tensorflow.keras.models import clone_model
+import copy
 
 
 def estimate(classifier, x_logit, threshold, label, n, method='top'):
@@ -38,21 +38,24 @@ def high_performance(model, classifier, cls, x, oversample, y, oversample_label,
     m_one_pre = classifier.call(x)
     m_one_acc = np.sum(m_one_pre.numpy().argmax(-1) == y)
     if (oversample.shape[0] > 0):
+        t_cls = copy(classifier)
         with tf.GradientTape() as m_two_tape, tf.GradientTape() as sim_tape:
-            gen_loss, _, m_two_loss = compute_loss(model, classifier, oversample,
+            gen_loss, _, m_two_loss = compute_loss(model, t_cls, oversample,
                                                    oversample_label, method=method)
         '''
         sim_gradients = sim_tape.gradient(gen_loss, model.trainable_variables)
         sim_optimizer.apply_gradients(zip(sim_gradients, model.trainable_variables))
         '''
-        m_two_gradients = m_two_tape.gradient(m_two_loss, classifier.trainable_variables)
-        o_optimizer.apply_gradients(zip(m_two_gradients, classifier.trainable_variables))
-        m_two_pre = classifier.call(x)
+        m_two_gradients = m_two_tape.gradient(m_two_loss, t_cls.trainable_variables)
+        o_optimizer.apply_gradients(zip(m_two_gradients, t_cls.trainable_variables))
+        m_two_pre = t_cls.call(x)
         m_two_acc = np.sum(m_two_pre.numpy().argmax(-1) == y)
 
         _, sigma = super_loss(classifier, oversample, oversample_label, out_put=2, on_train=False)
         margin = 0.01*(m_two_acc-m_one_acc) * tf.abs(classifier.threshold[cls] - np.mean(sigma))
         classifier._accumulate_threshold(cls, margin)
+        if (m_two_acc >= m_one_acc):
+            return t_cls
     return classifier
 
 
