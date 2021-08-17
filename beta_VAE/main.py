@@ -22,13 +22,13 @@ if __name__ == '__main__':
             # Virtual devices must be set before GPUs have been initialized
             print(e)
 
-    n = 25
+    n = 15
     batch_size = 64
-    threshold = [1. , 1., 0.957, 0.973, 0.964, 0.924, 0.927, 0.899, 0.739,0.744]
+    threshold = [1, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95]
     #threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
     threshold_list = [threshold]
     date = '8_17'
-    epochs = 30
+    epochs = 100
     for i in range(2, 11):
         data_name = 'mnist'
         file_path = 'mnist_top_n{}'.format(i)
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
         checkpoint = tf.train.Checkpoint(sim_clr=model, clssifier=classifier)
-        checkpoint.restore("./checkpoints/8_10/pre_train_mnist_super_loss/ckpt-40")
+        checkpoint.restore("./checkpoints/8_17/pre_train_mnist_super_loss/ckpt-40")
 
         start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                     [train_set, train_labels],
