@@ -38,7 +38,7 @@ def high_performance(model, classifier, cls, x, oversample, y, oversample_label,
     m_one_pre = classifier.call(x)
     m_one_acc = np.sum(m_one_pre.numpy().argmax(-1) == y)
     if (oversample.shape[0] > 0):
-        t_cls = copy(classifier)
+        t_cls = copy.copy(classifier)
         with tf.GradientTape() as m_two_tape, tf.GradientTape() as sim_tape:
             gen_loss, _, m_two_loss = compute_loss(model, t_cls, oversample,
                                                    oversample_label, method=method)
