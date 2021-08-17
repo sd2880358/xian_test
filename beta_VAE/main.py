@@ -31,7 +31,7 @@ if __name__ == '__main__':
     epochs = 30
     for i in range(2, 11):
         data_name = 'mnist'
-        file_path = 'mnist_super_loss{}'.format(i)
+        file_path = 'mnist_top_n{}'.format(i)
         dataset = Dataset(data_name, batch_size=batch_size)
         method = 'lsq'
         (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
