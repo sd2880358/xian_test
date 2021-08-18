@@ -39,7 +39,7 @@ if __name__ == '__main__':
             cls.restore(cls_manager.latest_checkpoint)
             print('classifier checkpoint restored!!')
 
-        classifier.compile(optimizer=tf.keras.optimizers.Adam(1e-4),
+        classifier.compile(optimizer=tf.keras.optimizers.Adam(2e-4, 0.5),
                            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                            metrics=['accuracy'])
         classifier.fit(train_set, train_labels, epochs=150, verbose=1, shuffle=True,
