@@ -22,7 +22,7 @@ def estimate(classifier, x_logit, threshold, label, n, method='top'):
             top_n = valid[tf.where(tf.greater_equal(tf.argsort(sigma, direction='DESCENDING'), n)).numpy()]
         else:
             return tf.Variable(tf.random.shuffle(valid)[:n])
-        return tf.Variable(top_n)
+        return tf.squeeze(tf.Variable(top_n), 1)
 
 def high_performance(model, classifier, cls, x, oversample, y, oversample_label, method):
     o_optimizer = tf.keras.optimizers.Adam(2e-4, 0.5)
