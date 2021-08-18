@@ -149,12 +149,12 @@ if __name__ == '__main__':
     n = 5
     target = 'margin'
     threshold = 0.95
-    date = '8_17'
+    date = '8_18'
     data_name = 'mnist'
     file_path = 'pre_train_mnist_super_loss'
     dataset = Dataset(data_name, batch_size=16)
     epochs = 200
-    c_epochs = 150
+    c_epochs = 70
     method = 'super_loss'
     (train_set, train_labels), (test_set, test_labels) = dataset.load_data()
     sim_clr = F_VAE(data=data_name, shape=dataset.shape, latent_dim=dataset.latent_dims, model='cnn', num_cls=dataset.num_cls)
