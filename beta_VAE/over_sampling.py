@@ -24,8 +24,7 @@ def estimate(classifier, x_logit, threshold, label, n, method='top'):
     return tf.Variable(top_n)
 
 def high_performance(model, classifier, cls, x, oversample, y, oversample_label, method):
-    o_optimizer = tf.keras.optimizers.Adam(1e-4)
-    sim_optimizer = tf.keras.optimizers.Adam(1e-4)
+    o_optimizer = tf.keras.optimizers.Adam(2e-4, 0.5)
     with tf.GradientTape() as m_one_tape, tf.GradientTape() as sim_tape:
         gen_loss, _, m_one_loss = compute_loss(model, classifier, x,
                                     y, method=method)

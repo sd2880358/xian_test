@@ -27,8 +27,8 @@ if __name__ == '__main__':
     threshold = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     #threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
     threshold_list = [threshold]
-    date = '8_17'
-    epochs = 100
+    date = '8_18'
+    epochs = 50
     for i in range(2, 11):
         data_name = 'mnist'
         file_path = 'mnist_top_n{}'.format(i)
