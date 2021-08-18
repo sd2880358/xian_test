@@ -36,7 +36,7 @@ def imbalance_sample(data, labels, irs):
   label_set = np.zeros([sum(irs)], dtype=int)
   s = 0
   for i in range(len(irs)):
-    tmp_sample = dataset[np.where(labels==i)]
+    tmp_sample = data[np.where(labels==i)]
     max_index = tmp_sample.shape[0]
     sample_index = np.random.randint(0, max_index, irs[i])
     dataset[s:s + irs[i], :, :, :] = tmp_sample[sample_index]
