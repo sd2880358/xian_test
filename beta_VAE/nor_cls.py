@@ -40,7 +40,7 @@ if __name__ == '__main__':
             print('classifier checkpoint restored!!')
 
         classifier.compile(optimizer=tf.keras.optimizers.Adam(2e-4, 0.5),
-                           loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                           loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
                            metrics=['accuracy'])
         classifier.fit(train_set, train_labels, epochs=150, verbose=1, shuffle=True,
                        batch_size=32,
