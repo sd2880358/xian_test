@@ -54,7 +54,7 @@ class Dataset():
     self.batch_size = batch_size
     self.dataset = dataset
     self.switcher = {
-      'mnist': np.load('../dataset/mnist_dataset2.npz'),
+      'mnist': np.load('../dataset/mnist_dataset1.npz'),
       'celebA': np.load('../dataset/celebA_dataset.npz'),
       'large_celebA': np.load('../dataset/celebA_large_dataset.npz'),
       #'fashion_mnist': np.load('../dataset/fashion_mnist.npz')
@@ -102,7 +102,7 @@ if __name__ == '__main__':
   train_images, train_labels = imbalance_sample(train_set, train_labels, irs)
   test_irs = [100] * len(irs)
   test_images, test_labels = imbalance_sample(test_set, test_labels, test_irs)
-  np.savez('../dataset/mnist_dataset2', train_images=train_images, train_labels=train_labels,
+  np.savez('../dataset/mnist_dataset1', train_images=train_images, train_labels=train_labels,
           test_images=test_images, test_labels=test_labels)
 
 
