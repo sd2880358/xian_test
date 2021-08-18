@@ -204,7 +204,7 @@ class Classifier(tf.keras.Model):
                         tf.keras.layers.LeakyReLU(alpha=0.1),
 
                         # No activation
-                        tf.keras.layers.Dense(self.num_cls),
+                        tf.keras.layers.Dense(self.num_cls, activation='softmax'),
                     ]
                 )
             )
