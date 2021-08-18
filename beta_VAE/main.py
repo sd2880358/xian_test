@@ -29,7 +29,7 @@ if __name__ == '__main__':
     threshold_list = [threshold]
     date = '8_18'
     epochs = 50
-    for i in range(2, 11):
+    for i in range(1, 11):
         data_name = 'mnist'
         file_path = 'mnist_top_n{}'.format(i)
         dataset = Dataset(data_name, batch_size=batch_size)
