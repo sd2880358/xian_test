@@ -16,10 +16,10 @@ import copy
 
 def estimate(classifier, x_logit, threshold, label, n, method='top'):
     _, sigma = super_loss(classifier, x_logit, label, out_put=2, on_train=False)
-    valid = x_logit.numpy()[tf.where(tf.greater_equal(sigma, threshold)).numpy()]
+    valid = x_logit[tf.where(tf.greater_equal(sigma, threshold)).numpy()]
     if (valid.shape[0] > 0):
         if (method == 'top'):
-            top_n = x_logit[tf.where(tf.argsort(sigma, direction='DESCENDING'), n).numpy()]
+            top_n = valid[tf.where(tf.argsort(sigma, direction='DESCENDING'), n).numpy()]
         else:
             return tf.Variable(tf.random.shuffle(valid)[:n])
         return tf.Variable(top_n)

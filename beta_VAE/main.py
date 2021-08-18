@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     n = 10
     batch_size = 64
-    threshold = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    threshold = [1.0, 0.999, 0.999, 0.999, 0.999, 0.999, 0.999, 0.999, 0.999, 0.999]
     #threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
     threshold_list = [threshold]
     date = '8_18'
