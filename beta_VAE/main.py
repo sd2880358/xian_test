@@ -23,6 +23,7 @@ if __name__ == '__main__':
             print(e)
 
     n = 10
+    sample_size = 21
     batch_size = 32
     threshold = [0.998, 0.997, 0.966, 0.957, 0.967, 0.931, 0.951, 0.887, 0.71 , 0.695]
     #threshold = [0.96, 0.927, 0.899, 0.739, 0.744]
@@ -43,5 +44,5 @@ if __name__ == '__main__':
 
         start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                     [train_set, train_labels],
-                    [test_set, test_labels], date, file_path)
+                    [test_set, test_labels], sample_size, date, file_path)
 

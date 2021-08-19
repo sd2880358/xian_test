@@ -84,7 +84,7 @@ def latent_triversal(model, classifier, x, y, r, n):
     return acc.result()
 
 def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
-                train_set, test_set, date, filePath):
+                train_set, test_set, sample_size, date, filePath):
     optimizer_list = []
     checkpoints_list = []
     classifier_list= []
@@ -135,8 +135,8 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                 # get the accuracy during training
                 label_on_train = classifier_list[i].call(x).numpy().argmax(-1)
                 metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
-                test = np.linspace(-5, 5, 21)
-                features_set = np.zeros([11, features.shape[1] * features.shape[0], 7])
+                test = np.linspace(-5, 5, sample_size)
+                features_set = np.zeros([sample_size, features.shape[1] * features.shape[0], 7])
                 for features_idx in range(features.shape[1]):
                     for j in range(len(test)):
                         tmp = features.numpy().copy()
