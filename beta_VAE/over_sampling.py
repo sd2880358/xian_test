@@ -143,7 +143,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                         tmp[:, features_idx] = test[j]
                         features_set[j, features_idx*features.shape[0]:(features_idx+1)*features.shape[0], :] = tmp
                 features_set = tf.Variable(
-                    features_set.reshape(features.shape[0]*features.shape[1]*11, 7))
+                    features_set.reshape(features.shape[0]*features.shape[1]*sample_size, 7))
                 for cls in range(1, model.num_cls):
                     # oversampling
                             sample_label = np.array(([cls] * features_set.shape[0]))
