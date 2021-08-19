@@ -135,7 +135,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                 # get the accuracy during training
                 label_on_train = classifier_list[i].call(x).numpy().argmax(-1)
                 metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
-                test = np.linspace(-5, 5, 11)
+                test = np.linspace(-5, 5, 21)
                 features_set = np.zeros([11, features.shape[1] * features.shape[0], 7])
                 for features_idx in range(features.shape[1]):
                     for j in range(len(test)):
