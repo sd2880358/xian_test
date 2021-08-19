@@ -146,13 +146,12 @@ if __name__ == '__main__':
             # Virtual devices must be set before GPUs have been initialized
             print(e)
 
-    n = 5
     target = 'margin'
     threshold = 0.95
     date = '8_18'
     data_name = 'mnist'
     file_path = 'pre_train_mnist_super_loss'
-    dataset = Dataset(data_name, batch_size=16)
+    dataset = Dataset(data_name, batch_size=32)
     epochs = 200
     c_epochs = 70
     method = 'super_loss'
