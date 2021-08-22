@@ -232,8 +232,8 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
 
                 valid_sample_data, valid_sample_label = transfer_to_data(metrix_list[i]['valid_sample_data'],
                                                                          metrix_list[i]['valid_sample_label'],
-                                                                         np.sum(valid_sample[:, 0],
-                                                                                dataset))
+                                                                         np.sum(valid_sample[:, 0]),
+                                                                                dataset)
 
 
                 result = {
