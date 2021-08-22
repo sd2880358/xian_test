@@ -24,16 +24,15 @@ def estimate(classifier, x_logit, threshold, label, n, method='top'):
         return tf.Variable(tf.random.shuffle(valid)[:n])
     return tf.squeeze(tf.Variable(top_n), 1)
 
-def transfer_to_data(l, nums, dataset):
-    tmp_d = l[:][0]
-    tmp_l = l[:][1]
+def transfer_to_data(d, l, nums, dataset):
     data = np.zeros([nums, dataset.shape[0], dataset.shape[1], dataset.shape[2]])
     label = np.zeros([nums,])
     s = 0
-    for i in range(tmp_d):
-        assert (tmp_d[i].shape[0] == tmp_l.shaoe[0])
-        data[s:tmp_d[i].shape[0], :, :, :] = tmp_d[i]
-        label[s:tmp_l[i].shape[0], :, :, :] = tmp_l[i]
+    for i in range(len(d)):
+        assert (d[i].shape[0] == l[i].shape[0])
+        data[s:s+d[i].shape[0], :, :, :] = d[i]
+        label[s:s+l[i].shape[0],] = l[i]
+        s += d[i].shape[0]
     return data, label
 
 def high_performance(model, classifier, cls, x, oversample, y, oversample_label, method):
@@ -171,7 +170,8 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                             #total_sample_idx = merge_list(s_index[0], m_index[0])
                             metrix_list[i]['valid_sample'].append([len(sample_y),
                                                            len(o_sample_y)])
-                            metrix_list[i]['valid_sample_data'].append([m_sample, sample_y])
+                            metrix_list[i]['valid_sample_data'].append(m_sample)
+                            metrix_list[i]['valid_sample_label'].append(sample_y)
                             metrix_list[i]['total_sample'] = metrix_list[i]['total_sample'] + list(sample_label)
                             metrix_list[i]['total_valid_sample'] = metrix_list[i]['total_valid_sample'] + list(sample_y)
                             classifier_list[i] = high_performance(model, classifier_list[i], cls, x,
@@ -187,6 +187,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
             metrix['total_valid_sample'] = []
             metrix['train_acc'] = []
             metrix['valid_sample_data'] = []
+            metrix['valid_sample_label'] = []
             metrix_list.append(metrix)
 
         start_time = time.time()
@@ -230,6 +231,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                 result_dir = result_dir_list[i]
 
                 valid_sample_data, valid_sample_label = transfer_to_data(metrix_list[i]['valid_sample_data'],
+                                                                         metrix_list[i]['valid_sample_label'],
                                                                          np.sum(valid_sample[:, 0],
                                                                                 dataset))
 
