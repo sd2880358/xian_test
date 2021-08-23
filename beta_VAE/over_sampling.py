@@ -270,8 +270,8 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                     os.makedirs(result_dir)
                 if not os.path.isfile(result_dir+'/result.csv'):
                     df.to_csv(result_dir+'/result.csv')
-                if not os.path.isfile(result_dir +'dataset.npz'):
-                    np.savez(result_dir + '/dataset', dataset=valid_sample_data, labels=valid_sample_label)
+                    if not os.path.isfile(result_dir +'dataset.npz'):
+                        np.savez(result_dir + '/dataset', dataset=valid_sample_data, labels=valid_sample_label)
                 else:  # else it exists so append without writing the header
                     df.to_csv(result_dir+'/result.csv', mode='a', header=False)
 

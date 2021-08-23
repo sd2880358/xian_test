@@ -40,7 +40,7 @@ if __name__ == '__main__':
         classifier = Classifier(shape=dataset.shape, model='mlp', num_cls=dataset.num_cls)
 
         checkpoint = tf.train.Checkpoint(sim_clr=model, clssifier=classifier)
-        checkpoint.restore("./checkpoints/8_18/pre_train_mnist_super_loss/ckpt-44")
+        checkpoint.restore("./checkpoints/8_18/pre_train_mnist_super_loss/ckpt-84")
 
         start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                     [train_set, train_labels],
