@@ -146,7 +146,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                 # get the accuracy during training
                 label_on_train = classifier_list[i].call(x).numpy().argmax(-1)
                 metrix_list[i]['train_acc'].append(np.sum(label_on_train==y.numpy())/len(y.numpy()))
-                test = np.linspace(-5, 5, sample_size)
+                test = np.linspace(-4, 4, sample_size)
                 features_set = np.zeros([sample_size, features.shape[1] * features.shape[0], 7])
                 for features_idx in range(features.shape[1]):
                     for j in range(len(test)):
@@ -155,7 +155,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                         features_set[j, features_idx*features.shape[0]:(features_idx+1)*features.shape[0], :] = tmp
                 features_set = tf.Variable(
                     features_set.reshape(features.shape[0]*features.shape[1]*sample_size, 7))
-                for cls in range(6, model.num_cls):
+                for cls in range(5, model.num_cls):
                     # oversampling
                             sample_label = np.array(([cls] * features_set.shape[0]))
                             z = tf.concat([features_set, np.expand_dims(sample_label, 1)], axis=1)
