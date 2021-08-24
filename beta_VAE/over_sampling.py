@@ -64,8 +64,8 @@ def high_performance(model, classifier, cls, x, oversample, y, oversample_label,
         if (m_two_acc >= m_one_acc):
             classifier = t_cls
         _, sigma = super_loss(classifier, oversample, oversample_label, out_put=2, on_train=False)
-        margin = 0.01*(m_two_acc-m_one_acc) * tf.abs(classifier.threshold[cls] - np.mean(sigma))
-        classifier._accumulate_threshold(cls, margin)
+        #margin = 0.01*(m_two_acc-m_one_acc) * tf.abs(classifier.threshold[cls] - np.mean(sigma))
+        #classifier._accumulate_threshold(cls, margin)
     return classifier
 
 
