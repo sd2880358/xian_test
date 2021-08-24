@@ -155,7 +155,7 @@ def start_train(epochs, n, threshold_list, method, model, classifier, dataset,
                         features_set[j, features_idx*features.shape[0]:(features_idx+1)*features.shape[0], :] = tmp
                 features_set = tf.Variable(
                     features_set.reshape(features.shape[0]*features.shape[1]*sample_size, 7))
-                for cls in range(1, model.num_cls):
+                for cls in range(6, model.num_cls):
                     # oversampling
                             sample_label = np.array(([cls] * features_set.shape[0]))
                             z = tf.concat([features_set, np.expand_dims(sample_label, 1)], axis=1)
