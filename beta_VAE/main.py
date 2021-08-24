@@ -22,7 +22,7 @@ if __name__ == '__main__':
             # Virtual devices must be set before GPUs have been initialized
             print(e)
 
-    n = 30
+    n = 5
     sample_size = 21
     batch_size = 32
     threshold = [0.998, 0.997, 0.966, 0.957, 0.967, 0.95, 0.951, 0.95, 0.95 , 0.95]
