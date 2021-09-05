@@ -202,5 +202,57 @@ class F_VAE(tf.keras.Model):
             return probs
         return logits
 
+class Div_Com(tf.keras.Model):
+    def __init__(self, shape, num_cls=3, model='cnn'):
+        super(Div_Com, self).__init__()
+        self.shape = shape
+        self.num_cls = num_cls
+        if (model == 'cnn'):
+            self.model = tf.keras.Sequential(
+                [
+                    tf.keras.layers.InputLayer(input_shape=(self.shape)),
+                    tf.keras.layers.Conv2D(
+                        filters=32, kernel_size=(4,1), strides=(4,1), activation='relu'),
+                    tf.keras.layers.MaxPool2D(2,2),
+                    tf.keras.layers.Conv2D(
+                        filters=64, kernel_size=(4,1), strides=(4,1), activation='relu'),
+                    tf.keras.layers.Flatten(),
+                    tf.keras.layers.Dense(64, activation='relu'),
+                    tf.keras.layers.Dense(4, activation='relu'),
+                    # No activation
+                ]
+            )
+        elif (model == 'mlp'):
+            self.model = tf.keras.Sequential(
+                (
+                    [
+                        tf.keras.layers.InputLayer(input_shape=self.shape),
+                        tf.keras.layers.Flatten(),
+                        tf.keras.layers.Dense(
+                            512, activation='relu'),
+                        tf.keras.layers.Dense(
+                            512, activation='relu'),
+
+                        # No activation
+                        tf.keras.layers.Dense(num_cls, activation='softmax'),
+                    ]
+                )
+            )
+
+        self.classifier = tf.keras.layers.Dense(num_cls, activation='softmax')
+    def flatten(self, X):
+        return self.model(X)
+
+
+    def reparameterize(self, latten, features):
+        return tf.concat([latten, features], axis=1)
+
+    def call(self, X):
+        return self.classifier(X)
+
+
+
+
+
 
 

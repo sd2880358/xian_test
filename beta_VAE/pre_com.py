@@ -1,4 +1,4 @@
-from model import Communication, F_VAE
+from model2 import Div_Com, F_VAE
 import tensorflow as tf
 from tensorflow_addons.image import rotate
 import time
@@ -14,24 +14,22 @@ from loss import compute_loss
 
 
 
-def top_loss(model, x, y):
+def top_loss(model, x, feature, y):
     num_cls = model.num_cls
-    h = model.projection(x)
-    tmp = 0
-    for i in range(len(num_cls)):
-        labels = tf.one_hot(y[:, i], num_cls[i])
-        loss_t = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
-                labels=labels, logits=h[i]
-        ), axis=0)
-        tmp = tf.math.add(loss_t, tmp)
-    return tmp
+    latten = model.flatten(x)
+    z = model.reparameterize(latten, feature)
+    h = model.call(z)
+    labels = tf.one_hot(y, num_cls)
+    loss_t = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+                labels=labels, logits=h
+    ), axis=0)
+    return loss_t, h
 
 
 def start_train(epochs, model, train_set, test_set, date, filePath, count):
-    @tf.function
-    def train_step(model, x, y, optimizer):
+    def train_step(model, x, feature, y, optimizer):
         with tf.GradientTape() as tape:
-            ori_loss = top_loss(model, x, y)
+            ori_loss, _ = top_loss(model, x, feature, y)
             total_loss = ori_loss
         gradients = tape.gradient(total_loss, model.trainable_variables)
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
@@ -52,8 +50,8 @@ def start_train(epochs, model, train_set, test_set, date, filePath, count):
 
         start_time = time.time()
 
-        for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            train_step(model, x, y, optimizer)
+        for x, feature, y in tf.data.Dataset.zip((train_set[0], train_set[1], train_set[2])):
+            train_step(model, x, feature, y, optimizer)
 
         #for x, y in tf.data.Dataset.zip((majority_set[0], majority_set[1])):
         #    train_step(model, x, y, optimizer)
@@ -70,11 +68,10 @@ def start_train(epochs, model, train_set, test_set, date, filePath, count):
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            h = model.projection(test_set[0])
-            for i in range(3):
-                correct_r_h = np.sum(h[i].numpy()[i].argmax(-1) == test_set[1][:, i])
-                percentage = (correct_r_h/float(len(test_set[1][:, i])))
-                acc[i](percentage)
+            _, h = top_loss(model, test_set[0], test_set[1], test_set[2])
+            correct_r_h = np.sum(h.numpy().argmax(-1) == test_set[2])
+            percentage = (correct_r_h/float(len(test_set[1])))
+            acc(percentage)
             accuracy = [i.result().numpy() for i in acc]
             average = sum(accuracy)/3
             print('Epoch: {},  average accuracy: {}, time elapse for current epoch: {}'
@@ -96,26 +93,34 @@ def start_train(epochs, model, train_set, test_set, date, filePath, count):
 
 
 if __name__ == '__main__':
-    date = '7_12'
-    dims = [120, 168]
+    date = '9_5'
+    dims = [168]
     batch_size = 6
+    num_class_index = [3, 4, 3]
     epochs = 50
     optimizer = tf.keras.optimizers.Adam(1e-4)
-    for data_index in range(2):
-        file = np.load('../communication_data/dataset{}.npz'.format(data_index))
+    for data_index in range(1):
+        file = np.load('../communication_data/dataset.npz')
         dataset = file['dataset']
         labelset = file['labelset']
-        classifier = Communication(shape=[dims[data_index], 6, 1])
-
-        for j in range(5):
+        flatten_feature = file['flatten_vector']
+        for i in range(3):
+            classifier = Div_Com(shape=[dims[data_index], 6, 1], num_cls=num_class_index[i])
             file_path = ('mix_cnn_test{}').format(data_index)
             seed = np.random.randint(0, 100)
             train_size = math.ceil(len(dataset) * 0.8)
-            train_set, train_labels = dataset[:train_size, :, :, :], labelset[:train_size, :]
-            test_set, test_labels = dataset[train_size:, :, :, :], labelset[train_size:, :]
+            train_set, train_labels, train_factors = dataset[:train_size, :, :, :], \
+                                                     labelset[:train_size, i], \
+                                                     flatten_feature[:train_size, :]
+            test_set, test_labels, test_factors = dataset[train_size:, :, :, :], \
+                                    labelset[train_size:, i],\
+                                    flatten_feature[train_size:, :]
             train_set = (tf.data.Dataset.from_tensor_slices(train_set)
                             .batch(batch_size))
+            train_factors = (tf.data.Dataset.from_tensor_slices(train_factors)
+                            .batch(batch_size))
             train_labels = (tf.data.Dataset.from_tensor_slices(train_labels)
-                        .batch(batch_size))
-            start_train(epochs, classifier, [train_set, train_labels],
-                        [test_set, test_labels], date, file_path, j)
+                            .batch(batch_size))
+            for j in range(5):
+                start_train(epochs, classifier, [train_set, train_factors, train_labels],
+                            [test_set, test_factors, test_labels], date, file_path, j)
